@@ -19,10 +19,15 @@
 
 ## 2. SMM tool
 
-Required for cross-posting and scheduling across IG, X, LinkedIn (and Threads/Bluesky where supported).
+**Decision (22 April 2026, Session 9):** **Buffer** — free tier. Sprout Social was considered (Dene works there and could likely get employee access at zero/low cost) but rejected on **personal/work separation** grounds: same reason the GitHub / Vercel / email identities are strictly separated between Inkwell and HealthDASH. Running a personal publication on an employer's product blurs lines — screenshots of Inkwell flow visible in work demos, colleagues seeing the feed, accidentally logged-in-as-work-identity moments. Not worth it for a feature set Inkwell at launch scale doesn't need.
 
-- **Action:** Dene to check Sprout Social employee licence first.
-- **Fallback:** if unavailable, Claude to recommend 2–3 free alternatives covering IG/X/LinkedIn scheduling at minimum.
+**Buffer specifics:**
+- **Plan:** Free tier at launch (3 channels × 10 scheduled posts each = ~30 slots/month; Inkwell uses ~24 at 2 posts/week across IG + X + LinkedIn).
+- **Upgrade trigger:** add Threads / Bluesky / Mastodon *or* exceed the 10-per-channel queue → upgrade to Essentials at $6/mo for unlimited posts + more channels.
+- **Workflow fit:** Claude produces PNG carousels via `pnpm cards:export`; Dene uploads to Buffer; Dene approves the weekly Tue/Fri queue. `/retro` consumes Buffer's CSV/API analytics exports on Mondays.
+- **Cross-post scope:** IG, X, LinkedIn at launch. Threads + Bluesky added once accounts exist (already removed from the footer icon row until then).
+
+**Rejected alternatives:** Sprout Social (separation concern, per above). Metricool, Hootsuite, Later — viable but Buffer's free tier + brand-fit was decisive.
 
 ## 3. Site role — CANONICAL
 
