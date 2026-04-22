@@ -2,70 +2,23 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Masthead from '../components/Masthead.astro';
 import Footer from '../components/Footer.astro';
-import CuriosityCard from '../components/CuriosityCard.astro';
 
-const curiosities = [
-  {
-    category: 'data' as const,
-    kicker: 'Data · Tue 21 Apr',
-    headline: 'The country that builds AI ranks 24th at using it.',
-    highlight: '24th',
-    standfirst: 'Microsoft\u2019s global adoption survey puts the UAE at 64%, Singapore at 61%, France at 44%, and the United States at 28.3%.',
-    author: 'Ollie Inkwell',
-    readMinutes: 7,
-    href: '/pieces/ai-adoption-gap',
-  },
-  {
-    category: 'voice' as const,
-    kicker: 'Voice · Fri 18 Apr',
-    headline: 'The polite conspiracy of averages.',
-    highlight: 'polite conspiracy',
-    standfirst: 'Why the mean is lying to the city planners — and always was.',
-    author: 'Ollie Inkwell',
-    readMinutes: 5,
-    href: '#',
-  },
-  {
-    category: 'cities' as const,
-    kicker: 'Cities · Tue 15 Apr',
-    headline: "Where the world's commutes actually shrank.",
-    highlight: 'actually shrank',
-    standfirst: 'Fourteen OECD economies, ten years, one line that bends.',
-    author: 'Rupa Das',
-    readMinutes: 7,
-    href: '#',
-  },
-  {
-    category: 'archive' as const,
-    kicker: 'Archive · Fri 11 Apr',
-    headline: 'Chocolate bars, 1970 to now, weighed.',
-    highlight: '1970 to now',
-    standfirst: 'Fifty years of shrinkage, in grams and in confectionery.',
-    author: 'Inkwell Review',
-    readMinutes: 4,
-    href: '#',
-  },
-  {
-    category: 'cover' as const,
-    kicker: 'Cover · Tue 08 Apr',
-    headline: 'What the median human did yesterday.',
-    highlight: 'did yesterday',
-    standfirst: 'Twenty-four hours, seven billion overlapping schedules, one composite day.',
-    author: 'Ollie Inkwell',
-    readMinutes: 6,
-    href: '#',
-  },
-  {
-    category: 'interviews' as const,
-    kicker: 'Interviews · Tue 01 Apr',
-    headline: 'The city planner who keeps a spreadsheet of regrets.',
-    highlight: 'spreadsheet of regrets',
-    standfirst: "An interview on the uses of measuring what didn't happen.",
-    author: 'Ollie Inkwell',
-    readMinutes: 9,
-    href: '#',
-  },
-];
+// Lead piece — swap slug/title/standfirst here when the lead changes.
+const lead = {
+  slug: 'extradition-atlas',
+  kicker: 'Data · This week\u2019s lead · Cartography',
+  swatchClass: 'lead__swatch--data',
+  headline: 'The',
+  highlight: '78 countries',
+  headlineTail: ' that will not send you home.',
+  standfirst: 'Every extradition treaty on Earth, mapped. One click toggles which country is doing the asking.',
+  author: 'Ollie Inkwell',
+  date: '19 April 2026',
+  readMinutes: 12,
+  format: 'Interactive map',
+  imageAlt: 'Lead piece — a dark map of every extradition treaty on Earth.',
+};
+const leadImage = `/pieces/${lead.slug}/social/0.png`;
 ---
 <BaseLayout siteSchema>
   <Masthead active="latest" />
@@ -76,52 +29,33 @@ const curiosities = [
       <div>
         <div class="lead__kicker rule-wobble-bottom">
           <span class="lead__swatch"></span>
-          <span>Data · This week's lead · Cartography</span>
+          <span>{lead.kicker}</span>
         </div>
         <h1 class="lead__headline">
-          <a href="/pieces/extradition-atlas" class="lead__link">
-            The <span class="hl">78 countries</span> that will not send you home.
+          <a href={`/pieces/${lead.slug}`} class="lead__link">
+            {lead.headline} <span class="hl">{lead.highlight}</span>{lead.headlineTail}
           </a>
         </h1>
         <p class="lead__standfirst">
-          Every extradition treaty on Earth, mapped. One click toggles which country is doing the asking.
+          {lead.standfirst}
         </p>
         <div class="lead__meta">
-          <span>By <em>Ollie Inkwell</em></span>
+          <span>By <em>{lead.author}</em></span>
           <span class="dot">·</span>
-          <span>19 April 2026</span>
+          <span>{lead.date}</span>
           <span class="dot">·</span>
-          <span>12 min read</span>
+          <span>{lead.readMinutes} min read</span>
           <span class="dot">·</span>
-          <span>Interactive map</span>
+          <span>{lead.format}</span>
         </div>
       </div>
 
-      <aside class="stat" aria-label="Lead story stat card">
-        <div class="stat__kicker">
-          <span>Data · Fig. I</span>
-          <span>195 countries</span>
-        </div>
-        <div class="stat__fig">78</div>
-        <p class="stat__caption">
-          Countries that will <span class="hl">not</span> send you home to the United States.
-        </p>
-        <div class="stat__breakdown">
-          <span>117 treaties</span><strong>·</strong><span>78 without</span>
-        </div>
-        <p class="stat__source">Source: US Department of State, 2024; Inkwell Review analysis.</p>
-      </aside>
+      <a class="lead__visual" href={`/pieces/${lead.slug}`} aria-label={`Read: ${lead.highlight}${lead.headlineTail}`}>
+        <img src={leadImage} alt={lead.imageAlt} loading="eager" />
+      </a>
     </section>
 
-    <!-- RECENT CURIOSITIES -->
-    <section class="recent" id="recent">
-      <div class="recent__head rule-wobble-bottom rule-wobble-bottom--double">
-        <h2>Recent Curiosities</h2>
-      </div>
-      <div class="cards">
-        {curiosities.map((c) => <CuriosityCard {...c} />)}
-      </div>
-    </section>
+    {/* Recent Curiosities section intentionally omitted until there are 4+ published pieces (current + 3 recent). */}
 
     <!-- EDITOR'S LETTER -->
     <section class="editor rule-wobble-top rule-wobble-bottom rule-wobble-bottom--heavy">
@@ -253,125 +187,23 @@ const curiosities = [
     opacity: 0.45;
   }
 
-  /* ---- Stat card ---- */
-  .stat {
-    background: var(--paper-blue);
+  /* ---- Lead visual (piece social card as image) ---- */
+  .lead__visual {
+    display: block;
+    position: relative;
     border: 1.5px solid var(--photocopy-black);
-    padding: 24px 26px 22px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    position: relative;
+    background: var(--photocopy-white);
+    overflow: hidden;
+    line-height: 0;
+    transition: opacity 0.15s ease;
   }
-  .stat__kicker {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 10px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    display: flex;
-    justify-content: space-between;
-    padding-bottom: 10px;
-    border-bottom: 1.5px solid var(--photocopy-black);
-    margin: 0;
+  .lead__visual img {
+    display: block;
+    width: 100%;
+    height: auto;
   }
-  .stat__fig {
-    font-family: var(--font-wordmark);
-    font-weight: 400;
-    font-size: clamp(120px, 18vw, 200px);
-    line-height: 0.86;
-    letter-spacing: -0.04em;
-    margin: 8px 0 0;
-    color: var(--photocopy-black);
-    font-variant-numeric: lining-nums;
-  }
-  .stat__caption {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 15px;
-    line-height: 1.2;
-    letter-spacing: -0.005em;
-    text-transform: uppercase;
-    margin: 0;
-    max-width: 18ch;
-  }
-  .stat__caption :global(.hl) {
-    background: var(--photocopy-black);
-    color: var(--paper-blue);
-    padding: 0 0.18em 0.08em;
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
-  }
-  .stat__breakdown {
-    display: flex;
-    gap: 14px;
-    margin-top: 16px;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-  }
-  .stat__breakdown strong {
-    font-family: var(--font-wordmark);
-    font-weight: 400;
-    font-style: italic;
-    font-size: 14px;
-  }
-  .stat__source {
-    font-family: var(--font-body);
-    font-style: italic;
-    font-size: 12px;
-    margin: 12px 0 0;
-    padding-top: 10px;
-    border-top: 1px solid #11111155;
-    color: #111111cc;
-  }
-
-  /* ============================================================
-     RECENT CURIOSITIES — six-card grid with tray-wash atmosphere
-     ============================================================ */
-  .recent {
-    margin-top: 56px;
-    position: relative;
-  }
-  .recent::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100vw;
-    background-image: url('/assets/masthead-tray-ink.png');
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 100% auto;
-    opacity: 0.18;
-    pointer-events: none;
-    z-index: 0;
-  }
-  .recent > * {
-    position: relative;
-    z-index: 1;
-  }
-  .recent__head {
-    display: flex;
-    align-items: baseline;
-    gap: 18px;
-    padding-bottom: 18px;
-    margin-bottom: 22px;
-  }
-  .recent__head h2 {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 32px;
-    letter-spacing: -0.01em;
-    margin: 0;
-  }
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+  .lead__visual:hover {
+    opacity: 0.92;
   }
 
   /* ============================================================
@@ -530,8 +362,9 @@ const curiosities = [
       grid-template-columns: 1fr;
       gap: 32px;
     }
-    .cards {
-      grid-template-columns: 1fr 1fr;
+    .lead__visual {
+      max-width: 520px;
+      margin: 0 auto;
     }
     .editor {
       grid-template-columns: 1fr;
@@ -543,14 +376,6 @@ const curiosities = [
     }
     .sub {
       grid-template-columns: 1fr;
-    }
-  }
-  @media (max-width: 640px) {
-    .cards {
-      grid-template-columns: 1fr;
-    }
-    .stat__fig {
-      font-size: 120px;
     }
   }
 </style>
