@@ -13,5 +13,9 @@ export default defineConfig({
   },
 
   adapter: vercel(),
-  integrations: [sitemap()]
+  integrations: [
+    sitemap({
+      filter: (page) => !page.includes('/review/') && !/\/pieces\/[^/]+\/social\//.test(page),
+    }),
+  ],
 });

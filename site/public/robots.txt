@@ -1,4 +1,9 @@
+# Inkwell Review — statistical peculiarities of human behaviour, twice weekly.
+# All crawlers welcome, including AI and LLM retrieval bots. Citation is a feature.
+
 User-agent: *
 Allow: /
+Disallow: /review/
+Disallow: /pieces/*/social/
 
 Sitemap: https://inkwellreview.com/sitemap-index.xml

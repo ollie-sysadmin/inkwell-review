@@ -1,0 +1,12 @@
+# Inkwell Review
+
+> A twice-weekly data-visualisation publication edited by Prof. Ollie Inkwell. Statistical peculiarities of human behaviour, charted properly and argued well. Every piece is sourced, every number is verified, no fabrication.
+
+## About
+
+- [Homepage](https://inkwellreview.com/): Latest curiosities, editor's letter, subscribe form.
+- [RSS feed](https://inkwellreview.com/rss.xml): Full-text feed — new pieces every Tuesday and Friday.
+
+## Published pieces
+
+- [The country that builds AI ranks 24th at using it](https://inkwellreview.com/pieces/ai-adoption-gap): Microsoft's 2025 global AI adoption survey shows the United States produces the most frontier AI models yet ranks 24th in workplace adoption (28.3%). The UAE leads at 64%; Singapore 61%. The country that wrote the menu is eating somewhere else.
