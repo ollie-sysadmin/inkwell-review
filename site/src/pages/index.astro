@@ -146,13 +146,16 @@ const curiosities = [
       <div>
         <p class="sub__kicker">Twice weekly · Free</p>
         <h4 class="sub__headline">
-          Charts worth repeating <em>at dinner</em> — in your inbox Tuesday and Friday.
+          Charts worth repeating <em>at dinner</em> — every Tuesday and Friday.
         </h4>
       </div>
-      <form class="sub__form" action="https://newsletter.inkwellreview.com/subscribe" method="post">
-        <input type="email" name="email" placeholder="reader@dinnerparty.club" aria-label="Email address" required />
-        <button type="submit">Subscribe</button>
-      </form>
+      <div class="sub__actions">
+        <a class="sub__cta" href="/rss.xml">
+          <span>Subscribe via RSS</span>
+          <span class="sub__cta-glyph" aria-hidden="true">›</span>
+        </a>
+        <p class="sub__pending">Email newsletter launching shortly.</p>
+      </div>
     </section>
   </main>
 
@@ -478,34 +481,47 @@ const curiosities = [
     font-weight: 400;
     font-size: 26px;
   }
-  .sub__form {
+  .sub__actions {
     display: flex;
-    gap: 0;
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
   }
-  .sub__form input {
-    flex: 1;
-    padding: 12px 14px;
-    font-family: var(--font-body);
-    font-size: 15px;
-    background: var(--photocopy-white);
-    border: 1.5px solid var(--photocopy-black);
-    border-right: 0;
-    outline: none;
-  }
-  .sub__form input:focus {
-    background: var(--paper-yellow);
-  }
-  .sub__form button {
-    padding: 12px 22px;
+  .sub__cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: 12px;
+    font-size: 13px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     background: var(--photocopy-black);
     color: var(--paper-purple);
     border: 1.5px solid var(--photocopy-black);
+    text-decoration: none;
     cursor: pointer;
+  }
+  .sub__cta:hover {
+    background: var(--paper-purple);
+    color: var(--photocopy-black);
+  }
+  .sub__cta-glyph {
+    font-family: var(--font-wordmark);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 22px;
+    letter-spacing: 0;
+    line-height: 1;
+    transform: translateY(-1px);
+  }
+  .sub__pending {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 13px;
+    margin: 0;
+    opacity: 0.72;
   }
 
   /* ---------- Responsive ---------- */
