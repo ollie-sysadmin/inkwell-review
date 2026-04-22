@@ -38,13 +38,21 @@ inkwellreview.com is the canonical home of every piece. Social posts are trailer
 
 ## 4. Newsletter
 
-**Platform:** Substack, custom-domained to `newsletter.inkwellreview.com`.
+**Status (22 April 2026, Session 9):** **platform decision deferred past launch.** Substack account creation was auto-blocked at signup ("account is currently suspended" — a known geo-flag pattern for Indonesian IP addresses, applied before Dene posted anything). Rather than fight a fragile workaround (VPN, appeal taking days) for a platform that had a 6-month sunset clause baked in anyway, the decision was taken to ship launch with **RSS-first subscribe** on the homepage and pick a newsletter platform in Week 2.
 
-**Duration:** 6-month commitment. Re-evaluate end of October 2026.
+**Original plan (for reference):** Substack, custom-domained to `newsletter.inkwellreview.com`, 6-month commitment, re-evaluate end of October 2026, migrate to own infra if subscribers ≥ ~1,000 with healthy retention.
 
-**Migration test:** if subscribers ≥ ~1,000 with healthy retention, migrate to own infra (Ghost / Buttondown / Beehiiv) for full audience ownership. If below that, save the setup work and stay on Substack.
+**Current plan for Week 2:**
 
-**Content source:** Substack pulls from inkwellreview.com RSS feed. One source of truth, no rewriting.
+- **Candidates in rank order:**
+  1. **Buttondown** — free up to 100 subs, $9/mo at 1k, $29/mo at 5k. Minimal, indie, API-first, RSS-to-email, custom domain. Best brand fit for a principled publication.
+  2. **Beehiiv** — free up to 2,500 subs. More Substack-parity features (discovery "Recommendations" network, beefier analytics) at the cost of a less indie aesthetic.
+  3. **Ghost Pro** — overkill, since Astro is already the CMS.
+- **Custom subdomain:** `newsletter.inkwellreview.com` — DNS setup deferred until platform is picked (different providers need different CNAME values).
+- **Content source (unchanged):** the chosen platform pulls from `inkwellreview.com/rss.xml`. One source of truth, no rewriting.
+- **Homepage during the interim:** "Subscribe via RSS" CTA + "Email newsletter launching shortly" caveat. No fake form, no broken subscribe endpoint.
+
+**Migration-test trigger (unchanged):** re-evaluate once subscriber count hits ~1,000 with healthy retention.
 
 ## 5. Growth bets
 

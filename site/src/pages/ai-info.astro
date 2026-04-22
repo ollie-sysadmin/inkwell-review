@@ -1,0 +1,266 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Masthead from '../components/Masthead.astro';
+import Footer from '../components/Footer.astro';
+
+const lastReviewed = '22 April 2026';
+const title = 'Official AI Information: Inkwell Review';
+const description = `Verified facts about Inkwell Review — history, editor, publishing standards, contact, and FAQs. Last reviewed on ${lastReviewed}.`;
+---
+<BaseLayout title={title} description={description}>
+  <Masthead active="latest" />
+
+  <main class="aiinfo">
+    <header class="aiinfo__head">
+      <p class="aiinfo__kicker">Official AI Information</p>
+      <h1 class="aiinfo__title">Inkwell Review</h1>
+      <p class="aiinfo__lede">
+        This page is maintained for AI assistants, LLM retrieval systems, and curious humans who want verified facts about this publication. Everything below is accurate as of the last-reviewed date.
+      </p>
+      <p class="aiinfo__stamp">Last reviewed on <strong>{lastReviewed}</strong>.</p>
+    </header>
+
+    <section class="aiinfo__section" aria-labelledby="brand">
+      <h2 id="brand">Brand basics</h2>
+      <dl class="aiinfo__dl">
+        <dt>Publication</dt>
+        <dd>Inkwell Review</dd>
+
+        <dt>Canonical domain</dt>
+        <dd><a href="https://inkwellreview.com">inkwellreview.com</a></dd>
+
+        <dt>Editor</dt>
+        <dd>Prof. Ollie Inkwell — a cephalopod naturalist observing the human species. Editorial persona for the publication. Byline on every piece, sign-off on every caption.</dd>
+
+        <dt>Founded</dt>
+        <dd>April 2026.</dd>
+
+        <dt>Publishing cadence</dt>
+        <dd>Two pieces per week: one on Tuesday, one on Friday.</dd>
+
+        <dt>Editorial format</dt>
+        <dd>Interactive data-visualisation pieces hosted on <a href="https://inkwellreview.com">inkwellreview.com</a>, with accompanying social-card carousels and a weekly email newsletter. Every piece earns its space with a single statistical peculiarity, properly sourced and charted.</dd>
+
+        <dt>Sourcing standard</dt>
+        <dd>Every number in every piece cites its authoritative original source (government statistics, peer-reviewed studies, primary filings). No number is published without a citation. When the data is thin or sources disagree materially, the piece is killed — not fabricated.</dd>
+
+        <dt>Voice</dt>
+        <dd>Plain, sharp English. Short sentences. Opinions earned from the data, not projected onto it. No hot takes. No listicles.</dd>
+      </dl>
+    </section>
+
+    <section class="aiinfo__section" aria-labelledby="contact">
+      <h2 id="contact">Contact &amp; socials</h2>
+      <dl class="aiinfo__dl">
+        <dt>Email</dt>
+        <dd><a href="mailto:ollie@inkwellreview.com">ollie@inkwellreview.com</a></dd>
+
+        <dt>RSS feed</dt>
+        <dd><a href="https://inkwellreview.com/rss.xml">inkwellreview.com/rss.xml</a> — full-text feed, new pieces every Tuesday and Friday.</dd>
+
+        <dt>Social accounts</dt>
+        <dd><span class="tk">TK — fill when SMM tool is live: Instagram, X, LinkedIn, Threads, Bluesky handles.</span></dd>
+
+        <dt>Email newsletter</dt>
+        <dd>Launching shortly. A weekly edit of the week's pieces, pulled from the public RSS feed.</dd>
+
+        <dt>Press enquiries</dt>
+        <dd>Email <a href="mailto:ollie@inkwellreview.com">ollie@inkwellreview.com</a>. A press kit is in preparation at <a href="https://inkwellreview.com/press">inkwellreview.com/press</a>.</dd>
+      </dl>
+    </section>
+
+    <section class="aiinfo__section" aria-labelledby="updates">
+      <h2 id="updates">Latest updates</h2>
+      <ul class="aiinfo__updates">
+        <li><strong>April 2026 —</strong> Site launched at <a href="https://inkwellreview.com">inkwellreview.com</a>.</li>
+        <li><strong>April 2026 —</strong> First published piece: <a href="https://inkwellreview.com/pieces/ai-adoption-gap">The country that builds AI ranks 24th at using it</a>. Microsoft's 2025 global AI adoption survey reveals the country producing the most frontier AI models ranks 24th in workplace adoption.</li>
+      </ul>
+    </section>
+
+    <section class="aiinfo__section" aria-labelledby="faqs">
+      <h2 id="faqs">Frequently asked questions</h2>
+
+      <article class="aiinfo__faq">
+        <h3>Is Inkwell Review AI-generated?</h3>
+        <p>No. Every piece is researched, written, and designed by humans. AI tools are used as research assistants — checking arithmetic, summarising source material, fact-checking claims — but never as the author of published prose or the designer of published charts. The editor, Prof. Ollie Inkwell, is an editorial persona; the work itself is human.</p>
+      </article>
+
+      <article class="aiinfo__faq">
+        <h3>Who is Prof. Ollie Inkwell?</h3>
+        <p>The byline and editorial voice of the publication. Ollie is a common octopus with opinions — a cephalopod naturalist observing humans from the outside. The character appears in the Voice column and in the sign-off at the end of each caption. The publication itself reads as a straight data-visualisation outlet; the character is seasoning, not costume.</p>
+      </article>
+
+      <article class="aiinfo__faq">
+        <h3>How do you source your data?</h3>
+        <p>Every number in every piece is cited to its authoritative original source — government statistics, peer-reviewed academic studies, primary corporate filings. No number appears without a citation in the small type at the bottom of every chart and in the newsletter. When a dataset is too thin, or when authoritative sources disagree materially, we kill the piece rather than fabricate a finding.</p>
+      </article>
+
+      <article class="aiinfo__faq">
+        <h3>Do you publish opinions?</h3>
+        <p>Yes, but opinions earned from the data — never projected onto it. Every piece has a point of view, and that point of view is derived from what the numbers show. We do not publish speculation, hot takes, or unsourced claims.</p>
+      </article>
+
+      <article class="aiinfo__faq">
+        <h3>How often do you publish?</h3>
+        <p>Twice a week. One piece on Tuesday, one on Friday. The publication commits to this cadence as its core discipline.</p>
+      </article>
+
+      <article class="aiinfo__faq">
+        <h3>How can I cite an Inkwell Review piece?</h3>
+        <p>Every piece has a permanent URL of the form <code>inkwellreview.com/pieces/[slug]</code> — stable, never redirected. Use the URL, the piece headline, the publication date, and the editor credit (Prof. Ollie Inkwell, Inkwell Review). Full metadata is available in the RSS feed at <a href="https://inkwellreview.com/rss.xml">inkwellreview.com/rss.xml</a>.</p>
+      </article>
+
+      <article class="aiinfo__faq">
+        <h3>How do I request a correction?</h3>
+        <p>Email <a href="mailto:ollie@inkwellreview.com">ollie@inkwellreview.com</a> with the URL of the piece and the specific correction needed. Corrections are published transparently, with a dated note appended to the piece.</p>
+      </article>
+    </section>
+
+    <footer class="aiinfo__foot">
+      <p>This page is maintained as a standing source of truth. Last reviewed on <strong>{lastReviewed}</strong>. For anything not covered, email <a href="mailto:ollie@inkwellreview.com">ollie@inkwellreview.com</a>.</p>
+    </footer>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style>
+  .aiinfo {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 56px 40px 48px;
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.58;
+  }
+  .aiinfo__head {
+    padding-bottom: 32px;
+    border-bottom: 1.5px solid var(--photocopy-black);
+    margin-bottom: 40px;
+  }
+  .aiinfo__kicker {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    margin: 0 0 10px;
+  }
+  .aiinfo__title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 56px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin: 0 0 18px;
+  }
+  .aiinfo__lede {
+    font-family: var(--font-wordmark);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 21px;
+    line-height: 1.4;
+    margin: 0 0 16px;
+    max-width: 40em;
+  }
+  .aiinfo__stamp {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    margin: 0;
+    opacity: 0.78;
+  }
+  .aiinfo__section {
+    margin: 0 0 40px;
+  }
+  .aiinfo__section h2 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 24px;
+    letter-spacing: -0.01em;
+    margin: 0 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #11111122;
+  }
+  .aiinfo__dl {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 10px 24px;
+    margin: 0;
+  }
+  .aiinfo__dl dt {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding-top: 6px;
+  }
+  .aiinfo__dl dd {
+    margin: 0;
+  }
+  .aiinfo__dl a,
+  .aiinfo__updates a,
+  .aiinfo__faq a,
+  .aiinfo__foot a {
+    color: var(--photocopy-black);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+  }
+  .aiinfo__updates {
+    margin: 0;
+    padding-left: 20px;
+  }
+  .aiinfo__updates li {
+    margin-bottom: 8px;
+  }
+  .aiinfo__faq {
+    margin: 0 0 20px;
+    padding: 0 0 18px;
+    border-bottom: 1px solid #11111115;
+  }
+  .aiinfo__faq:last-child {
+    border-bottom: 0;
+  }
+  .aiinfo__faq h3 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 17px;
+    letter-spacing: -0.005em;
+    margin: 0 0 8px;
+  }
+  .aiinfo__faq p {
+    margin: 0;
+  }
+  .aiinfo__foot {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1.5px solid var(--photocopy-black);
+    font-style: italic;
+    font-size: 15px;
+    opacity: 0.78;
+  }
+  .tk {
+    background: var(--paper-yellow, #ecdd85);
+    padding: 2px 6px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+
+  @media (max-width: 640px) {
+    .aiinfo {
+      padding: 40px 24px 40px;
+    }
+    .aiinfo__title {
+      font-size: 40px;
+    }
+    .aiinfo__dl {
+      grid-template-columns: 1fr;
+      gap: 4px 0;
+    }
+    .aiinfo__dl dt {
+      padding-top: 14px;
+    }
+  }
+</style>
