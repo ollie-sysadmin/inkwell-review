@@ -1652,8 +1652,11 @@ const havensToggleVisible = showHavensToggle ?? havens.size > 0;
     max-height: none;
   }
   :global(.card-lightbox::backdrop) {
-    background: rgba(17, 17, 17, 0.82);
-    backdrop-filter: blur(2px);
+    /* Near-opaque to fully hide the underlying page content — 82% was
+       leaving the masthead and byline legible through the tint on mobile.
+       Drop the blur filter (had no effect at this opacity and iOS Safari
+       fallback for backdrop-filter is inconsistent). */
+    background: rgba(17, 17, 17, 0.96);
   }
   :global(.card-lightbox[open]) {
     display: flex;
