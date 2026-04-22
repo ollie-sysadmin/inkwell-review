@@ -805,17 +805,27 @@ const havensToggleVisible = showHavensToggle ?? havens.size > 0;
         dialog.style.setProperty('--scale', String(computeScale()));
       }
 
+      const viewportEl = dialog.querySelector('.card-lightbox__viewport');
+      const metaEl = dialog.querySelector('.card-lightbox__meta');
+
+      function openLightbox(index, label) {
+        const url = '/pieces/' + slug + '/social/' + index;
+        frame.setAttribute('src', url);
+        labelEl.textContent = label;
+        openLink.setAttribute('href', url);
+        applyScale();
+        // Lock background scroll — showModal's ::backdrop does not prevent
+        // touch-scroll of the underlying page on iOS Safari. Apply on both
+        // <html> and <body> because document scroll is driven by <html>.
+        document.documentElement.classList.add('lightbox-open');
+        document.body.classList.add('lightbox-open');
+        if (typeof dialog.showModal === 'function') dialog.showModal();
+        else dialog.setAttribute('open', '');
+      }
+
       document.querySelectorAll('.card-gallery__item').forEach((item) => {
         item.addEventListener('click', () => {
-          const index = item.getAttribute('data-index');
-          const label = item.getAttribute('data-label');
-          const url = '/pieces/' + slug + '/social/' + index;
-          frame.setAttribute('src', url);
-          labelEl.textContent = label;
-          openLink.setAttribute('href', url);
-          applyScale();
-          if (typeof dialog.showModal === 'function') dialog.showModal();
-          else dialog.setAttribute('open', '');
+          openLightbox(item.getAttribute('data-index'), item.getAttribute('data-label'));
         });
       });
 
@@ -824,14 +834,24 @@ const havensToggleVisible = showHavensToggle ?? havens.size > 0;
         else dialog.removeAttribute('open');
         // Blank the iframe so d3 stops running in the background
         frame.setAttribute('src', 'about:blank');
+        document.documentElement.classList.remove('lightbox-open');
+        document.body.classList.remove('lightbox-open');
       }
       closeBtn.addEventListener('click', closeLightbox);
-      // Click-outside-to-close: dialog backdrop click fires on the dialog itself.
+      // Click-outside-to-close: the dialog box sizes to its flex content, so
+      // taps on the backdrop area can land on either the dialog element itself
+      // or on the ::backdrop pseudo (inconsistent across mobile browsers).
+      // Detect "outside the card" by checking bounds of the card + meta + close.
       dialog.addEventListener('click', (event) => {
-        if (event.target === dialog) closeLightbox();
+        const inCard = viewportEl?.contains(event.target);
+        const inMeta = metaEl?.contains(event.target);
+        const inClose = closeBtn.contains(event.target);
+        if (!inCard && !inMeta && !inClose) closeLightbox();
       });
       dialog.addEventListener('close', () => {
         frame.setAttribute('src', 'about:blank');
+        document.documentElement.classList.remove('lightbox-open');
+        document.body.classList.remove('lightbox-open');
       });
       // Keep the card fitted when the window resizes while open.
       window.addEventListener('resize', () => {
@@ -1606,6 +1626,17 @@ const havensToggleVisible = showHavensToggle ?? havens.size > 0;
      top-right of the dialog; label + open-standalone sit in a
      small footer under the card.
      ============================================================ */
+  :global(html.lightbox-open),
+  :global(body.lightbox-open) {
+    /* Lock background scroll while the lightbox dialog is open. Body
+       alone is not enough — document scroll on mobile is driven by
+       <html>, so both must be locked. Without this the page can
+       touch-scroll underneath the ::backdrop on iOS Safari. */
+    overflow: hidden;
+    /* Prevent overscroll bounce from propagating when the locked
+       document is momentum-scrolling at the lock moment. */
+    overscroll-behavior: contain;
+  }
   :global(.card-lightbox) {
     /* --scale is a unitless number set by JS on open + on resize.
        Default falls back to a reasonable mid-size so pre-JS the layout
@@ -1636,12 +1667,12 @@ const havensToggleVisible = showHavensToggle ?? havens.size > 0;
     position: absolute;
     /* Float in the dimmed area above the card so it never overlaps the
        card's own chrome. */
-    top: -46px;
+    top: -52px;
     right: 0;
     background: transparent;
     border: 1.5px solid var(--photocopy-white);
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
     font-family: var(--font-display);
     font-weight: 400;
     font-size: 22px;
@@ -1650,6 +1681,9 @@ const havensToggleVisible = showHavensToggle ?? havens.size > 0;
     cursor: pointer;
     padding: 0;
     transition: background 0.12s ease, color 0.12s ease;
+    /* iOS-safe tap target: 44x44 minimum per Apple HIG. */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
   :global(.card-lightbox__close:hover) {
     background: var(--photocopy-white);
