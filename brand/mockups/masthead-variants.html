@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inkwell Review — Masthead variants</title>
+<link rel="stylesheet" href="../design-system/project/colors_and_type.css">
+<style>
+  html, body { margin: 0; padding: 0; background: var(--photocopy-white); color: var(--photocopy-black); font-family: var(--font-body); }
+
+  /* Speckle overlay — organic scatter (tuned down from v2) */
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 200;
+    background-image:
+      radial-gradient(circle at 13% 22%, #11111159 0.8px, transparent 1.2px),
+      radial-gradient(circle at 79% 11%, #11111144 0.5px, transparent 0.9px),
+      radial-gradient(circle at 34% 61%, #11111133 0.6px, transparent 1px),
+      radial-gradient(circle at 92% 48%, #11111140 0.4px, transparent 0.7px),
+      radial-gradient(circle at 7% 83%,  #11111144 0.7px, transparent 1px),
+      radial-gradient(circle at 61% 88%, #1111112e 0.5px, transparent 0.8px);
+    background-size:
+      473px 391px, 367px 521px, 589px 317px, 293px 467px, 541px 359px, 319px 563px;
+    opacity: 0.45;
+    mix-blend-mode: multiply;
+  }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 40px; }
+  .page-title {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 40px; letter-spacing: -0.01em; margin: 0 0 8px;
+  }
+  .page-sub {
+    font-family: var(--font-wordmark); font-style: italic;
+    font-size: 18px; margin: 0 0 40px; color: #111111cc;
+  }
+
+  .variant {
+    margin-bottom: 48px;
+    border: 1.5px solid var(--photocopy-black);
+    overflow: hidden;
+  }
+  .variant__label {
+    background: var(--photocopy-black);
+    color: var(--paper-purple);
+    padding: 10px 20px;
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    display: flex; justify-content: space-between; gap: 16px;
+  }
+  .variant__label em {
+    font-family: var(--font-wordmark); font-weight: 400; font-style: italic;
+    font-size: 14px; letter-spacing: 0; text-transform: none;
+    opacity: 0.85;
+  }
+  .variant__notes {
+    padding: 16px 24px;
+    font-family: var(--font-body); font-size: 14px; line-height: 1.55;
+    background: var(--photocopy-white);
+    border-top: 1.5px solid var(--photocopy-black);
+    color: #111111dd;
+  }
+  .variant__notes strong { font-weight: 700; }
+  .variant__body-teaser {
+    padding: 32px 40px;
+    background: var(--photocopy-white);
+    font-family: var(--font-body); font-size: 14px; color: #11111188;
+    font-style: italic;
+    text-align: center;
+  }
+
+  /* =======================================================
+     A · INK-REVERSED
+     ======================================================= */
+  .mast-a {
+    background: var(--photocopy-black); color: var(--paper-purple);
+    padding: 22px 40px 24px;
+    border-bottom: 6px double var(--paper-purple);
+  }
+  .mast-a__rail {
+    display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+    font-family: var(--font-display); font-weight: 800; font-size: 10px;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    padding-bottom: 14px;
+    border-bottom: 1.5px solid var(--paper-purple);
+    opacity: 0.88;
+  }
+  .mast-a__main {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 32px; margin-top: 20px;
+  }
+  .mast-a__wm {
+    font-family: var(--font-wordmark); font-weight: 400;
+    font-size: clamp(64px, 8.5vw, 104px);
+    line-height: 0.82; letter-spacing: -0.02em;
+    color: var(--paper-purple);
+  }
+  .mast-a__wm em { font-style: italic; }
+  .mast-a__nav {
+    display: flex; gap: 2px; padding-bottom: 12px; flex-wrap: wrap;
+    justify-content: flex-end; max-width: 500px;
+  }
+  .mast-a__nav a {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--paper-purple); text-decoration: none;
+    padding: 6px 10px 7px; opacity: 0.78;
+  }
+  .mast-a__nav a.is-active {
+    background: var(--paper-purple); color: var(--photocopy-black); opacity: 1;
+  }
+  .mast-a__tag {
+    display: flex; justify-content: space-between; gap: 32px; align-items: baseline;
+    font-family: var(--font-wordmark); font-style: italic;
+    font-size: 15px; margin-top: 18px; padding-top: 12px;
+    border-top: 1.5px solid var(--paper-purple);
+  }
+
+  /* =======================================================
+     B · BROADSHEET GIANT (photocopy-white, massive wordmark)
+     ======================================================= */
+  .mast-b {
+    background: var(--photocopy-white);
+    padding: 18px 40px 22px;
+    border-bottom: 6px double var(--photocopy-black);
+  }
+  .mast-b__rail {
+    display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+    font-family: var(--font-display); font-weight: 800; font-size: 10px;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    padding: 8px 12px;
+    background: var(--photocopy-black);
+    color: var(--paper-purple);
+    margin-bottom: 16px;
+  }
+  .mast-b__giant {
+    font-family: var(--font-wordmark); font-weight: 400;
+    font-size: clamp(96px, 14vw, 180px);
+    line-height: 0.82; letter-spacing: -0.025em;
+    margin: 0; padding: 0;
+    color: var(--photocopy-black);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .mast-b__giant em { font-style: italic; }
+  .mast-b__bar {
+    display: flex; justify-content: space-between; gap: 20px; align-items: baseline;
+    margin-top: 16px; padding-top: 14px;
+    border-top: 2px solid var(--photocopy-black);
+    font-family: var(--font-wordmark); font-style: italic; font-size: 15px;
+  }
+  .mast-b__nav {
+    display: flex; gap: 2px; flex-wrap: wrap;
+  }
+  .mast-b__nav a {
+    font-family: var(--font-display); font-weight: 800; font-style: normal;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--photocopy-black); text-decoration: none;
+    padding: 4px 8px 5px;
+  }
+  .mast-b__nav a.is-active {
+    background: var(--photocopy-black); color: var(--paper-purple);
+  }
+
+  /* =======================================================
+     C · PURPLE PAPER + OLLIE UP TOP
+     (violates the earlier "Ollie stays out of chrome" rule;
+      shown because Dene asked for it as an option)
+     ======================================================= */
+  .mast-c {
+    background: var(--paper-purple);
+    padding: 22px 40px 24px;
+    border-bottom: 6px double var(--photocopy-black);
+    position: relative;
+  }
+  .mast-c__rail {
+    display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+    font-family: var(--font-display); font-weight: 800; font-size: 10px;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    padding-bottom: 14px;
+    border-bottom: 1.5px solid var(--photocopy-black);
+  }
+  .mast-c__main {
+    display: grid; grid-template-columns: 120px 1fr auto; gap: 24px; align-items: flex-end;
+    margin-top: 20px;
+  }
+  .mast-c__ollie {
+    width: 120px; height: 120px;
+    background: var(--paper-purple);
+  }
+  .mast-c__ollie img {
+    width: 100%; height: 100%; object-fit: cover;
+    mix-blend-mode: multiply; display: block;
+  }
+  .mast-c__wm {
+    font-family: var(--font-wordmark); font-weight: 400;
+    font-size: clamp(56px, 8vw, 96px);
+    line-height: 0.82; letter-spacing: -0.02em;
+    color: var(--photocopy-black);
+  }
+  .mast-c__wm em { font-style: italic; }
+  .mast-c__nav {
+    display: flex; gap: 2px; padding-bottom: 12px; flex-wrap: wrap;
+    justify-content: flex-end; max-width: 420px;
+  }
+  .mast-c__nav a {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--photocopy-black); text-decoration: none;
+    padding: 6px 10px 7px;
+  }
+  .mast-c__nav a.is-active {
+    background: var(--photocopy-black); color: var(--paper-purple);
+  }
+  .mast-c__tag {
+    display: flex; justify-content: space-between; gap: 32px; align-items: baseline;
+    font-family: var(--font-wordmark); font-style: italic;
+    font-size: 15px; margin-top: 18px; padding-top: 12px;
+    border-top: 1.5px solid var(--photocopy-black);
+  }
+  .mast-c__tag .r {
+    font-family: var(--font-display); font-style: normal;
+    font-weight: 800; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h1 class="page-title">Masthead variants</h1>
+  <p class="page-sub">Three directions for the Inkwell Review masthead. Pick one, or mix elements. Scroll to see each option plus the body teaser to feel the contrast with content below.</p>
+
+  <!-- A -->
+  <div class="variant">
+    <div class="variant__label"><span>A · Ink-reversed</span><em>current pick for the main mockup</em></div>
+    <header class="mast-a">
+      <div class="mast-a__rail">
+        <span>Vol. I · Iss. 02</span>
+        <span>Tue 21 Apr 2026</span>
+        <span>inkwellreview.com</span>
+      </div>
+      <div class="mast-a__main">
+        <div class="mast-a__wm">Inkwell<br><em>Review</em></div>
+        <nav class="mast-a__nav">
+          <a href="#" class="is-active">Latest</a>
+          <a>Cover</a><a>Data</a><a>Voice</a><a>Cities</a><a>Archive</a><a>Interviews</a><a>Subscribe</a>
+        </nav>
+      </div>
+      <div class="mast-a__tag">
+        <span>Statistical peculiarities of human behaviour.</span>
+        <span>Edited by Ollie · twice weekly</span>
+      </div>
+    </header>
+    <div class="variant__body-teaser">↓ content continues on photocopy-white ↓</div>
+    <div class="variant__notes"><strong>Why:</strong> maximum contrast — the masthead owns the top of the page and never blurs into the content below. Most editorial/broadsheet of the three. <strong>Cost:</strong> committed; the homepage has two dark bars (masthead + footer) which frames the content on a pale middle. Could feel heavy on mobile. <strong>Preserves:</strong> the locked rule that Ollie is a column, not a chrome element.</div>
+  </div>
+
+  <!-- B -->
+  <div class="variant">
+    <div class="variant__label"><span>B · Broadsheet giant</span><em>photocopy-white with a dominant wordmark</em></div>
+    <header class="mast-b">
+      <div class="mast-b__rail">
+        <span>Vol. I · Iss. 02 · Tue 21 Apr 2026 · inkwellreview.com</span>
+      </div>
+      <div class="mast-b__giant">Inkwell <em>Review</em></div>
+      <div class="mast-b__bar">
+        <span>Statistical peculiarities of human behaviour.</span>
+        <nav class="mast-b__nav">
+          <a class="is-active">Latest</a>
+          <a>Cover</a><a>Data</a><a>Voice</a><a>Cities</a><a>Archive</a><a>Subscribe</a>
+        </nav>
+      </div>
+    </header>
+    <div class="variant__body-teaser">↓ content continues on photocopy-white ↓</div>
+    <div class="variant__notes"><strong>Why:</strong> quiet confidence. The wordmark does the work, no inverse trick needed. Most <em>Monocle</em>-adjacent of the three. <strong>Cost:</strong> the single-line wordmark is wide — at narrow viewports it either shrinks or clips. The small black rail above handles the meta info. <strong>Preserves:</strong> the locked rule; no Ollie in chrome.</div>
+  </div>
+
+  <!-- C -->
+  <div class="variant">
+    <div class="variant__label"><span>C · Purple paper + Ollie up top</span><em>breaks the "Ollie stays out of chrome" rule</em></div>
+    <header class="mast-c">
+      <div class="mast-c__rail">
+        <span>Vol. I · Iss. 02</span>
+        <span>Tue 21 Apr 2026</span>
+        <span>inkwellreview.com</span>
+      </div>
+      <div class="mast-c__main">
+        <div class="mast-c__ollie"><img src="../assets/ollie-portrait.jpg" alt=""></div>
+        <div class="mast-c__wm">Inkwell<br><em>Review</em></div>
+        <nav class="mast-c__nav">
+          <a class="is-active">Latest</a>
+          <a>Data</a><a>Voice</a><a>Cities</a><a>Archive</a><a>Subscribe</a>
+        </nav>
+      </div>
+      <div class="mast-c__tag">
+        <span>Statistical peculiarities of human behaviour.</span>
+        <span class="r">Edited by Ollie · twice weekly</span>
+      </div>
+    </header>
+    <div class="variant__body-teaser">↓ content continues on photocopy-white ↓</div>
+    <div class="variant__notes"><strong>Why:</strong> warm, immediate personality. Ollie greets the reader. The purple paper makes the masthead a section in its own right. <strong>Cost:</strong> Ollie appearing in the masthead contradicts the locked rule ("character is seasoning, not costume") and risks him becoming a mascot. The purple paper also collides with the purple subscribe strip further down — two pastels on one home page breaks the "one paper per page" rule, which was specifically for slug pages but still feels loud here. <strong>Preserves:</strong> nothing — this is a deliberate departure, shown because you asked to consider it.</div>
+  </div>
+
+</div>
+
+</body>
+</html>

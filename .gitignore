@@ -1,0 +1,10 @@
+# Staging folder for PNG exports — transient, regenerate via pnpm cards:export.
+# The served/public-URL copies live in site/public/pieces/*/social/*.png and
+# those ARE committed.
+social-output/
+
+# Claude Code — user-local permission grants, not shared
+.claude/settings.local.json
+
+# macOS-specific files
+.DS_Store

@@ -1,0 +1,32 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  .card { padding: 28px 32px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  .k { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.7; margin-bottom: 8px; }
+  table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 13px; }
+  th, td { text-align: right; padding: 6px 10px; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+  th { font-family: var(--font-display); font-weight: 700; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--photocopy-black); text-align: right; }
+  th:first-child, td:first-child { text-align: left; font-family: var(--font-body); }
+  .big { font-family: var(--font-display); font-weight: 800; font-size: 72px; line-height: 0.9; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .lbl { font-family: var(--font-body); font-size: 14px; margin-top: 6px; max-width: 22ch; }
+</style></head>
+<body><div class="card">
+  <div class="card__kicker">Numerals</div>
+  <div class="grid">
+    <div>
+      <div class="k">Display — big numbers</div>
+      <div class="big">−6.5 min</div>
+      <div class="lbl">Change in the median OECD-14 commute, 2014 → 2024.</div>
+    </div>
+    <div>
+      <div class="k">Mono — tabular tables</div>
+      <table>
+        <tr><th>Year</th><th>Median</th><th>Mean</th></tr>
+        <tr><td>2014</td><td>34.5</td><td>36.2</td></tr>
+        <tr><td>2019</td><td>31.9</td><td>35.6</td></tr>
+        <tr><td>2024</td><td>28.0</td><td>35.6</td></tr>
+      </table>
+    </div>
+  </div>
+</div></body></html>

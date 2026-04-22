@@ -1,0 +1,58 @@
+---
+/**
+ * Article-page wrapper. Used by every format template (Cartography, Life,
+ * Shrinkage, Grid, Specimen). Sets the desk colour, renders the masthead
+ * and footer, and hosts the article body slot.
+ *
+ * Per brand/visual-system.md: article pages are wall-to-wall desk colour —
+ * one paper per page. Chart cards inside the article stay on the same
+ * paper and are distinguished by 4px ink rules, not by a colour change.
+ */
+import BaseLayout from './BaseLayout.astro';
+import Masthead from '../components/Masthead.astro';
+import Footer from '../components/Footer.astro';
+
+export interface Props {
+  desk: 'cover' | 'data' | 'voice' | 'cities' | 'archive' | 'interviews';
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  canonical?: string;
+  article: {
+    headline: string;
+    datePublished: string;
+    dateModified?: string;
+    author?: string;
+    image?: string;
+  };
+}
+
+const { desk, title, description, ogImage, canonical, article } = Astro.props;
+---
+<BaseLayout
+  category={desk}
+  title={title}
+  description={description}
+  ogImage={ogImage}
+  canonical={canonical}
+  article={article}
+>
+  <Masthead active="latest" />
+  <main class="article">
+    <slot />
+  </main>
+  <Footer />
+</BaseLayout>
+
+<style>
+  .article {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 56px 40px 96px;
+  }
+  @media (max-width: 640px) {
+    .article {
+      padding: 32px 20px 64px;
+    }
+  }
+</style>

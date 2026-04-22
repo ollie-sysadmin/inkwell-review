@@ -1,0 +1,544 @@
+---
+/**
+ * SocialCard4x5 — the 1080×1350 portrait card used across Instagram,
+ * LinkedIn, Threads, Bluesky. Ported Session 6 from
+ * `brand/mockups/atlas-social-4x5.html`.
+ *
+ * Composition (locked, see brand/visual-system.md § Social card):
+ *   · Masthead — small Inkwell Review wordmark + issue tag, double rule
+ *   · Kicker + headline with circled-or-highlight emphasis mark
+ *   · The plate — cartouche, per-piece stamp slot, map, mini-legend
+ *   · Big misreg stat (complementary to the headline number) + caption
+ *   · Footer — source line + canonical URL
+ *
+ * Map grammar (locked Session 5) — the chart card carries the same
+ * #1F1F1F charcoal ocean, solid paper-colour country fills,
+ * photocopy-white anchor, photocopy-white country borders at 0.7
+ * stroke-opacity. Outside the plate the card wears the desk's paper
+ * colour; inside the plate the grammar is identical to the site.
+ *
+ * Rendered today as HTML by `/pieces/[slug]/social/[index]`.
+ * Satori exports to PNG at build time via
+ * `/pieces/[slug]/social/[index].png`.
+ */
+import type { SocialCardProps } from './SocialCard4x5.types';
+export type { SocialCardProps, LegendItem, LegendClass, Desk } from './SocialCard4x5.types';
+
+const props = Astro.props as SocialCardProps;
+const {
+  desk,
+  issueTag,
+  kicker,
+  headline,
+  emphasis,
+  figNumber,
+  plateTitle,
+  anchor,
+  havens,
+  euMembers,
+  showHavens = false,
+  legend,
+  footerStat,
+  sourceLine,
+  ctaUrl,
+  stampSvg,
+  id = 'inkwell-social-card',
+} = props;
+
+// Split the headline around the emphasis word — matches Cartography.astro.
+const [headlineBefore, headlineAfter] = (() => {
+  if (!emphasis) return [headline, ''];
+  const idx = headline.indexOf(emphasis.word);
+  if (idx === -1) return [headline, ''];
+  return [headline.slice(0, idx), headline.slice(idx + emphasis.word.length)];
+})();
+const emphasisClass = emphasis?.type === 'circled' ? 'circ' : 'hl';
+
+// Serialise sets → arrays for the client d3 script.
+const payload = {
+  anchor: {
+    id: anchor.id,
+    partners: Array.from(anchor.partners),
+    reluctant: anchor.reluctant ? Array.from(anchor.reluctant) : [],
+    suspended: anchor.suspended ? Array.from(anchor.suspended) : [],
+    bloc: anchor.bloc ? Array.from(anchor.bloc) : [],
+  },
+  havens: Array.from(havens),
+  euMembers: euMembers ? Array.from(euMembers) : [],
+  showHavens,
+};
+
+const mapSvgId = `${id}-map`;
+const dataElId = `${id}-data`;
+---
+
+<div class={`card-page cat-${desk}`}>
+
+  <article
+    class="card"
+    id={id}
+    role="img"
+    aria-label={`${plateTitle}. ${headline}`}
+  >
+
+    <!-- MASTHEAD -->
+    <header class="mast-wrap">
+      <div class="mast">
+        <span class="mast__wm">Inkwell <em>Review</em></span>
+        <span class="mast__issue">{issueTag}</span>
+      </div>
+      <hr class="mast-rule" />
+    </header>
+
+    <!-- KICKER + HEADLINE -->
+    <div class="head-block">
+      <p class="kicker">
+        <span class="kicker__swatch" aria-hidden="true"></span>
+        {kicker}
+      </p>
+      <h1 class="headline">
+        {headlineBefore}
+        {emphasis && <span class={emphasisClass}>{emphasis.word}</span>}
+        {headlineAfter}
+      </h1>
+    </div>
+
+    <!-- THE PLATE -->
+    <section class="plate" aria-label={plateTitle}>
+
+      <div class="plate__cartouche">
+        <span class="plate__fig">Fig. {figNumber}</span>
+        <span class="plate__title">{plateTitle}</span>
+      </div>
+
+      <div class="plate__stamp" aria-hidden="true" set:html={stampSvg}></div>
+
+      <div class="map-wrap">
+        <svg
+          id={mapSvgId}
+          viewBox="40 30 880 420"
+          preserveAspectRatio="xMidYMid meet"
+          role="img"
+          aria-label={`World map, ${plateTitle}`}
+        ></svg>
+      </div>
+
+      <div class="plate__legend">
+        {legend.map((item) => (
+          <span class="item">
+            <span class:list={['sw', `sw--${item.cls}`]} aria-hidden="true"></span>
+            {item.label}
+          </span>
+        ))}
+      </div>
+    </section>
+
+    <!-- BIG MISREG STAT — complementary to the headline number. -->
+    <section class="stat-big">
+      <div class="stat-big__value" data-value={footerStat.value}>
+        {footerStat.value}{footerStat.unit && <span class="stat-big__unit">{footerStat.unit}</span>}
+      </div>
+      <div class="stat-big__caption" set:html={footerStat.caption}></div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="card-footer">
+      <span class="card-footer__source"><em>{sourceLine}</em></span>
+      <span class="card-footer__url">{ctaUrl}</span>
+    </footer>
+
+  </article>
+
+  <script type="application/json" id={dataElId} set:html={JSON.stringify(payload)}></script>
+</div>
+
+<!-- Ink-jitter filter (BaseLayout defines one, but this component can be
+     rendered on pages that omit BaseLayout, so declare locally.) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="ink-jitter" x="-2%" y="-15%" width="104%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="2" seed="3" result="noise" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.4" />
+    </filter>
+  </defs>
+</svg>
+
+<!-- d3 + topojson from CDN, then per-card render. -->
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script is:inline define:vars={{ mapSvgId, dataElId }}>
+  (() => {
+    const dataEl = document.getElementById(dataElId);
+    if (!dataEl) return;
+    const raw = JSON.parse(dataEl.textContent);
+    const anchorId = raw.anchor.id;
+    const partners = new Set(raw.anchor.partners);
+    const reluctant = new Set(raw.anchor.reluctant);
+    const suspended = new Set(raw.anchor.suspended);
+    const bloc = new Set(raw.anchor.bloc);
+    const havens = new Set(raw.havens);
+    const euMembers = new Set(raw.euMembers);
+    const showHavens = raw.showHavens === true;
+
+    function classify(id) {
+      if (id === anchorId) return 'country country--anchor';
+      if (anchorId === 'eu' && bloc.has(id)) return 'country country--eu-bloc';
+      if (anchorId === 'eu' && euMembers.has(id)) return 'country country--eu-bloc';
+      if (showHavens && havens.has(id) && (!partners.has(id) || reluctant.has(id))) {
+        return 'country country--haven';
+      }
+      if (suspended.has(id)) return 'country country--suspended';
+      if (reluctant.has(id)) return 'country country--reluctant';
+      if (partners.has(id)) return 'country country--treaty';
+      return 'country country--no-treaty';
+    }
+
+    const projection = d3.geoNaturalEarth1().scale(175).translate([480, 270]);
+    const path = d3.geoPath(projection);
+
+    d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then((world) => {
+      const countries = topojson.feature(world, world.objects.countries).features;
+      const svg = d3.select('#' + mapSvgId);
+      svg.selectAll('path')
+        .data(countries)
+        .join('path')
+        .attr('d', path)
+        .attr('class', (d) => classify(String(d.id).padStart(3, '0')));
+    }).catch((err) => {
+      console.error('SocialCard4x5: failed to load world atlas', err);
+    });
+  })();
+</script>
+
+<style>
+  /* ============================================================
+     4:5 SOCIAL CARD — 1080×1350 portrait.
+     Ground is the desk paper colour (set by .cat-* wrapper);
+     the plate inside carries the locked Cartography map grammar.
+     ============================================================ */
+
+  /* The page wrapper sets --desk via .cat-* so the card and its
+     misregistration shadows pick up the right paper colour. */
+  .card-page {
+    background: #222;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px;
+    font-family: var(--font-body);
+    color: var(--photocopy-black);
+    box-sizing: border-box;
+  }
+
+  .card {
+    position: relative;
+    width: 1080px;
+    height: 1350px;
+    background: var(--desk);
+    color: var(--photocopy-black);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 44px 60px 40px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("/assets/speckle-dark.svg");
+    background-repeat: repeat;
+    opacity: 0.85;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+  }
+
+  /* ---- MASTHEAD ---- */
+  .mast {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    position: relative;
+  }
+  .mast__wm {
+    font-family: var(--font-wordmark);
+    font-weight: 400;
+    font-size: 40px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .mast__wm em {
+    font-style: italic;
+    margin-left: 0.18em;
+  }
+  .mast__issue {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  .mast-rule {
+    border: 0;
+    border-top: 5px double var(--photocopy-black);
+    margin: 14px 0 30px;
+  }
+
+  /* ---- KICKER + HEADLINE ---- */
+  .kicker {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    margin: 0 0 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .kicker__swatch {
+    width: 16px;
+    height: 16px;
+    background: var(--photocopy-black);
+    display: inline-block;
+  }
+  .headline {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 68px;
+    line-height: 0.98;
+    letter-spacing: -0.025em;
+    margin: 0 0 18px;
+    text-wrap: balance;
+  }
+  .headline .circ {
+    position: relative;
+    display: inline-block;
+    padding: 0 0.14em;
+    z-index: 0;
+  }
+  .headline .circ::before {
+    content: "";
+    position: absolute;
+    inset: -0.04em -0.1em -0.06em -0.1em;
+    border: 3.5px solid var(--photocopy-black);
+    border-radius: 50%;
+    transform: rotate(-2.2deg);
+    z-index: -1;
+    pointer-events: none;
+    filter: url(#ink-jitter);
+  }
+  .headline .hl {
+    background: var(--photocopy-black);
+    color: var(--photocopy-white);
+    padding: 0 0.18em 0.08em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    filter: url(#ink-jitter);
+  }
+
+  /* ---- THE PLATE ---- */
+  .plate {
+    position: relative;
+    border: 2px solid var(--photocopy-black);
+    background: var(--photocopy-white);
+    padding: 22px 22px 18px;
+    margin: 0;
+  }
+  .plate__cartouche {
+    position: absolute;
+    top: -2px;
+    left: 24px;
+    background: var(--desk);
+    padding: 0 12px 0 10px;
+    transform: translateY(-52%);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .plate__fig {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--photocopy-black);
+    border-right: 2px solid var(--photocopy-black);
+    padding-right: 12px;
+  }
+  .plate__title {
+    font-family: var(--font-wordmark);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 20px;
+    letter-spacing: -0.01em;
+    color: var(--photocopy-black);
+  }
+  .plate__stamp {
+    position: absolute;
+    top: -2px;
+    right: 24px;
+    background: var(--desk);
+    padding: 8px 12px;
+    transform: translateY(-45%);
+  }
+  .plate__stamp :global(svg) {
+    display: block;
+    width: 36px;
+    height: 26px;
+    filter: url(#ink-jitter);
+  }
+
+  /* ---- Map (locked Cartography grammar) ---- */
+  .map-wrap {
+    position: relative;
+    background: #1F1F1F;
+    border: 1.5px solid var(--photocopy-black);
+    overflow: hidden;
+  }
+  .map-wrap svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .map-wrap :global(.country) {
+    fill: var(--photocopy-black);
+    stroke: var(--photocopy-white);
+    stroke-width: 0.6;
+    stroke-opacity: 0.7;
+  }
+  .map-wrap :global(.country--treaty)    { fill: var(--paper-green);  stroke-opacity: 0.8; }
+  .map-wrap :global(.country--reluctant) { fill: var(--paper-yellow); stroke-opacity: 0.8; }
+  .map-wrap :global(.country--haven)     { fill: var(--paper-pink);   stroke-opacity: 0.8; }
+  .map-wrap :global(.country--suspended) { fill: var(--paper-brown);  stroke-opacity: 0.8; }
+  .map-wrap :global(.country--eu-bloc)   { fill: var(--paper-purple); stroke-opacity: 0.8; }
+  .map-wrap :global(.country--no-treaty) { fill: var(--photocopy-black); }
+  .map-wrap :global(.country--anchor) {
+    fill: var(--photocopy-white);
+    stroke: var(--photocopy-black);
+    stroke-width: 1;
+    stroke-opacity: 1;
+  }
+
+  /* Mini-legend under the map. */
+  .plate__legend {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1.5px solid var(--photocopy-black);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .plate__legend .item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .plate__legend .sw {
+    width: 20px;
+    height: 12px;
+    border: 1.5px solid var(--photocopy-black);
+    display: inline-block;
+  }
+  .sw--anchor    { background: var(--photocopy-white); }
+  .sw--treaty    { background: var(--paper-green); }
+  .sw--reluctant { background: var(--paper-yellow); }
+  .sw--haven     { background: var(--paper-pink); }
+  .sw--eu-bloc   { background: var(--paper-purple); }
+  .sw--no-treaty { background: var(--photocopy-black); }
+
+  /* ---- BIG MISREG STAT ---- */
+  .stat-big {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 28px;
+    align-items: center;
+    margin: 0;
+  }
+  .stat-big__value {
+    font-family: var(--font-wordmark);
+    font-weight: 400;
+    font-size: 260px;
+    line-height: 0.85;
+    letter-spacing: -0.04em;
+    color: var(--photocopy-black);
+    position: relative;
+    isolation: isolate;
+    font-variant-numeric: lining-nums;
+  }
+  .stat-big__value::before {
+    content: attr(data-value);
+    position: absolute;
+    left: 5px;
+    top: 6px;
+    color: var(--desk);
+    -webkit-text-stroke: 2px var(--photocopy-black);
+    z-index: -1;
+    mix-blend-mode: multiply;
+  }
+  .stat-big__unit {
+    font-family: var(--font-wordmark);
+    font-weight: 400;
+    font-size: 100px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-left: 6px;
+    color: var(--photocopy-black);
+    vertical-align: 0.32em;
+  }
+  .stat-big__caption {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 34px;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+  }
+  .stat-big__caption :global(em) {
+    font-family: var(--font-wordmark);
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  /* ---- FOOTER ---- */
+  .card-footer {
+    border-top: 2.5px solid var(--photocopy-black);
+    padding-top: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 20px;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  .card-footer__source {
+    flex: 1;
+    min-width: 0;
+  }
+  .card-footer__source em {
+    font-family: var(--font-wordmark);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 14px;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--photocopy-black);
+    opacity: 0.7;
+  }
+  .card-footer__url {
+    font-size: 18px;
+    letter-spacing: 0.12em;
+    flex-shrink: 0;
+  }
+</style>

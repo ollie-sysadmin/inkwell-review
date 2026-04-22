@@ -1,0 +1,94 @@
+---
+/**
+ * Monocle-style, type-only masthead. Locked end-of-day 20 April 2026.
+ * No image of any kind in the masthead — see context/decisions-log.md.
+ */
+export interface Props {
+  active?: 'latest' | 'archive' | 'subscribe';
+}
+const { active = 'latest' } = Astro.props;
+---
+<header class="mast">
+  <div class="mast__inner">
+    <a href="/" class="mast__wm" aria-label="Inkwell Review — home">Inkwell<em>Review</em></a>
+    <div class="mast__tag">Statistical peculiarities of human behaviour.</div>
+    <div class="mast__rule" aria-hidden="true"></div>
+    <nav class="mast__nav" aria-label="Primary">
+      <a href="/#recent" class={active === 'latest' ? 'is-active' : ''}>Latest</a>
+      <a href="/archive" class={active === 'archive' ? 'is-active' : ''}>Archive</a>
+      <a href="/#subscribe" class={active === 'subscribe' ? 'is-active' : ''}>Subscribe</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .mast {
+    background: var(--photocopy-black);
+    color: var(--desk);
+    padding: 36px 40px 0;
+    position: relative;
+    z-index: 1;
+  }
+  .mast__inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .mast__wm {
+    display: inline-block;
+    font-family: var(--font-wordmark);
+    font-weight: 400;
+    font-size: clamp(48px, 10vw, 132px);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: var(--desk);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .mast__wm em {
+    font-style: italic;
+    margin-left: 0.18em;
+  }
+  .mast__tag {
+    margin: 22px auto 28px;
+    font-family: var(--font-wordmark);
+    font-style: italic;
+    font-size: 17px;
+    line-height: 1;
+    color: var(--desk);
+  }
+  .mast__rule {
+    border-top: 6px double var(--desk);
+  }
+  .mast__nav {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    padding: 18px 0 22px;
+  }
+  .mast__nav a {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--desk);
+    text-decoration: none;
+    padding: 6px 2px 8px;
+    border-bottom: 2px solid transparent;
+  }
+  .mast__nav a:hover {
+    border-bottom-color: var(--desk);
+    opacity: 0.85;
+  }
+  .mast__nav a.is-active {
+    border-bottom-color: var(--desk);
+  }
+
+  @media (max-width: 960px) {
+    .mast__nav {
+      max-width: 100%;
+      justify-content: flex-start;
+    }
+  }
+</style>

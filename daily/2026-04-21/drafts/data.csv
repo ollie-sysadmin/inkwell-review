@@ -1,0 +1,47 @@
+# AI diffusion by top 30 geographic areas, first vs second half 2025
+# Source: Microsoft AI Economy Institute, 2025, via Stanford AI Index 2026 Report (Figure 4.3.12, page 201)
+# Chart: "AI diffusion by top 30 geographic areas, first vs. second half 2025"
+# Definition: Survey-based estimate of generative AI use in the population (methodology in Misra et al., 2025)
+# Retrieved: 21 April 2026
+#
+# Columns:
+#   rank_h2 — rank in H2 2025 (1 = highest adoption)
+#   country — country name (matches world-atlas conventions where possible)
+#   iso3 — ISO 3166-1 alpha-3 for map joining
+#   h1_2025 — adoption rate, first half 2025 (%)
+#   h2_2025 — adoption rate, second half 2025 (%)
+#   delta_pp — change in percentage points (h2 − h1)
+#   rank_h1 — rank in H1 2025
+#   source — always "Microsoft AI Economy Institute, 2025 (Stanford AI Index 2026, Fig 4.3.12)"
+
+rank_h2,country,iso3,h1_2025,h2_2025,delta_pp,rank_h1,source
+1,United Arab Emirates,ARE,59.40,64.00,4.60,1,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+2,Singapore,SGP,58.60,60.90,2.30,2,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+3,Norway,NOR,45.30,46.40,1.10,3,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+4,Ireland,IRL,41.70,44.60,2.90,4,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+5,France,FRA,40.90,44.00,3.10,5,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+6,Spain,ESP,39.70,41.80,2.10,6,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+7,New Zealand,NZL,37.60,40.50,2.90,7,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+8,Netherlands,NLD,36.30,38.90,2.60,9,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+9,United Kingdom,GBR,36.40,38.90,2.50,8,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+10,Qatar,QAT,35.70,38.30,2.60,10,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+11,Australia,AUS,34.50,36.90,2.40,11,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+12,Israel,ISR,33.90,36.10,2.20,12,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+13,Belgium,BEL,33.50,36.00,2.50,13,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+14,Canada,CAN,33.50,35.00,1.50,14,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+15,Switzerland,CHE,32.40,34.80,2.50,15,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+16,Sweden,SWE,31.20,33.30,2.20,16,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+17,Austria,AUT,29.10,31.40,2.20,17,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+18,South Korea,KOR,25.90,30.70,4.80,25,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+19,Hungary,HUN,27.90,29.80,1.90,18,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+20,Denmark,DNK,26.60,28.70,2.10,19,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+21,Germany,DEU,26.50,28.60,2.10,20,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+22,Poland,POL,26.40,28.50,2.10,21,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+23,Taiwan,TWN,26.40,28.40,2.00,22,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+24,United States,USA,26.30,28.30,2.00,23,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+25,Czech Republic,CZE,26.00,27.80,1.80,24,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+26,Italy,ITA,25.80,27.80,2.00,26,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+27,Bulgaria,BGR,25.40,27.30,1.90,28,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+28,Finland,FIN,25.60,27.30,1.70,27,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+29,Jordan,JOR,25.40,27.00,1.60,29,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)
+30,Costa Rica,CRI,25.10,26.50,1.40,30,Microsoft AI Economy Institute 2025 (Stanford AI Index 2026 Fig 4.3.12)

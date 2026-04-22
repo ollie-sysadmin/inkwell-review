@@ -1,0 +1,128 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  .card { padding: 24px 28px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .art {
+    border: 1.5px solid var(--photocopy-black);
+    padding: 16px 18px 18px;
+    background: var(--photocopy-white);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 220px;
+  }
+  .art--cover      { background: var(--paper-purple); }
+  .art--data       { background: var(--paper-blue); }
+  .art--voice      { background: var(--paper-yellow); }
+  .art--cities     { background: var(--paper-green); }
+  .art--archive    { background: var(--paper-brown); }
+  .art--interviews { background: var(--paper-pink); }
+
+  .swatch {
+    position: absolute;
+    top: -1.5px;
+    left: -1.5px;
+    width: 14px;
+    height: 14px;
+    background: var(--photocopy-black);
+  }
+  .art-k {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    padding-left: 22px;
+  }
+  .art h4 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 20px;
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    margin: 0 0 8px;
+  }
+  .art h4 .hl {
+    background: var(--photocopy-black);
+    color: var(--bg);
+    padding: 0 0.22em 0.06em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+  .art--cover .hl      { color: var(--paper-purple); }
+  .art--data .hl       { color: var(--paper-blue); }
+  .art--voice .hl      { color: var(--paper-yellow); }
+  .art--cities .hl     { color: var(--paper-green); }
+  .art--archive .hl    { color: var(--paper-brown); }
+  .art--interviews .hl { color: var(--paper-pink); }
+
+  .art p {
+    font-family: var(--font-wordmark);
+    font-style: italic;
+    font-size: 14px;
+    line-height: 1.4;
+    margin: 0 0 auto;
+  }
+  .meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    border-top: 1.5px solid var(--photocopy-black);
+    padding-top: 10px;
+    margin-top: 14px;
+  }
+  .meta .mins {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    text-transform: none;
+  }
+</style></head>
+<body><div class="card">
+  <div class="card__kicker">Components · Cards · Category-coloured</div>
+  <h3 class="card__title">One card, one paper.</h3>
+  <p class="card__sub">Corner swatch locks the desk. Headline run reverses to the paper. Standfirst is italic serif.</p>
+
+  <div class="grid">
+    <article class="art art--cover">
+      <span class="swatch"></span>
+      <div class="art-k">Cover</div>
+      <h4>Why the <span class="hl">median</span> commute shrank.</h4>
+      <p>The average barely moved. The typical worker moved a lot.</p>
+      <div class="meta"><span>Rupa Das</span><span class="mins">9 min</span></div>
+    </article>
+
+    <article class="art art--data">
+      <span class="swatch"></span>
+      <div class="art-k">Data</div>
+      <h4>The <span class="hl">shape</span> of rent, in twelve cities.</h4>
+      <p>Twelve histograms, twelve different animals.</p>
+      <div class="meta"><span>Jean Oyelaran</span><span class="mins">14 min</span></div>
+    </article>
+
+    <article class="art art--voice">
+      <span class="swatch"></span>
+      <div class="art-k">Voice</div>
+      <h4>On the <span class="hl">dignity</span> of the boring average.</h4>
+      <p>Ollie defends the much-maligned arithmetic mean.</p>
+      <div class="meta"><span>— Ollie</span><span class="mins">4 min</span></div>
+    </article>
+
+    <article class="art art--interviews">
+      <span class="swatch"></span>
+      <div class="art-k">Interviews</div>
+      <h4>Mary Gray on <span class="hl">invisible</span> labour.</h4>
+      <p>Twenty years of ghost work, and what comes next.</p>
+      <div class="meta"><span>Nadia Cole</span><span class="mins">22 min</span></div>
+    </article>
+  </div>
+</div></body></html>

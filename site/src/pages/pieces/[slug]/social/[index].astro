@@ -1,0 +1,58 @@
+---
+/**
+ * Dynamic social-card route — serves one 4:5 card from a piece's
+ * `socialCards` array as a standalone HTML page. One path per
+ * (piece × card-index).
+ *
+ *   /pieces/extradition-atlas/social/0  → Atlas · US anchor
+ *   /pieces/extradition-atlas/social/1  → Atlas · UK anchor
+ *   /pieces/fugitive-destinations/social/0  → FD · US anchor
+ *   ...etc
+ *
+ * Card metadata lives in `src/pieces/<slug>.ts` (sibling to the
+ * article page). Satori generates PNGs from the same card data via
+ * `[index].png.ts` at build time.
+ */
+import '../../../../styles/global.css';
+import SocialCard4x5 from '../../../../components/SocialCard4x5.astro';
+import type { SocialCardProps } from '../../../../components/SocialCard4x5.types';
+
+interface PieceCardsModule {
+  socialCards?: SocialCardProps[];
+}
+
+export async function getStaticPaths() {
+  const modules = import.meta.glob<PieceCardsModule>('../../../../pieces/*.ts', { eager: true });
+  const paths: Array<{ params: { slug: string; index: string }; props: { card: SocialCardProps } }> = [];
+
+  for (const [filepath, mod] of Object.entries(modules)) {
+    const match = filepath.match(/\/([^/]+)\.ts$/);
+    if (!match) continue;
+    const slug = match[1];
+    const cards = mod.socialCards;
+    if (!Array.isArray(cards)) continue;
+    cards.forEach((card, i) => {
+      paths.push({
+        params: { slug, index: String(i) },
+        props: { card },
+      });
+    });
+  }
+  return paths;
+}
+
+const { card } = Astro.props;
+const { slug, index } = Astro.params;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=1080, initial-scale=1" />
+    <title>{`${slug} · social card ${index}`}</title>
+    <meta name="robots" content="noindex,nofollow" />
+  </head>
+  <body>
+    <SocialCard4x5 {...card} />
+  </body>
+</html>

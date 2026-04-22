@@ -1,0 +1,123 @@
+---
+/**
+ * Recent Curiosities card. One per recent piece.
+ * `category` drives the swatch colour via the token variables.
+ */
+export interface Props {
+  category: 'voice' | 'cities' | 'archive' | 'cover' | 'data' | 'interviews';
+  kicker: string;
+  headline: string;
+  /** Words to wrap in a `.hl` reversed-highlight span inside the headline. */
+  highlight?: string;
+  standfirst: string;
+  author: string;
+  readMinutes: number;
+  href: string;
+}
+
+const { category, kicker, headline, highlight, standfirst, author, readMinutes, href } = Astro.props;
+
+const swatchColour: Record<Props['category'], string> = {
+  voice: 'var(--paper-yellow)',
+  cities: 'var(--paper-green)',
+  archive: 'var(--paper-brown)',
+  cover: 'var(--paper-purple)',
+  data: 'var(--paper-blue)',
+  interviews: 'var(--paper-pink)',
+};
+
+const [headlineBefore, headlineAfter] = (() => {
+  if (!highlight) return [headline, ''];
+  const idx = headline.indexOf(highlight);
+  if (idx === -1) return [headline, ''];
+  return [headline.slice(0, idx), headline.slice(idx + highlight.length)];
+})();
+---
+<article class="card">
+  <span class="card__swatch" style={`background: ${swatchColour[category]};`}></span>
+  <p class="card__kicker">{kicker}</p>
+  <h3 class="card__headline">
+    <a href={href}>
+      {headlineBefore}{highlight && <span class="hl">{highlight}</span>}{headlineAfter}
+    </a>
+  </h3>
+  <p class="card__standfirst">{standfirst}</p>
+  <div class="card__foot">
+    <span>{author}</span>
+    <span>{readMinutes} min</span>
+  </div>
+</article>
+
+<style>
+  .card {
+    border: 1.5px solid var(--photocopy-black);
+    padding: 18px 20px 20px;
+    background: var(--photocopy-white);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 240px;
+  }
+  .card__swatch {
+    width: 14px;
+    height: 14px;
+    position: absolute;
+    top: 18px;
+    left: 20px;
+    border: 1.5px solid var(--photocopy-black);
+  }
+  .card__kicker {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding-left: 24px;
+    margin: 0;
+  }
+  .card__headline {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 24px;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    margin: 6px 0 0;
+  }
+  .card__headline a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .card__headline a:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+  }
+  .card__headline :global(.hl) {
+    background: var(--photocopy-black);
+    color: var(--photocopy-white);
+    padding: 0 0.18em 0.08em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+  .card__standfirst {
+    font-family: var(--font-wordmark);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.4;
+    margin: 0;
+  }
+  .card__foot {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+</style>

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Brand — Wordmark at size</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  .row {
+    display: flex;
+    align-items: flex-end;
+    gap: 36px;
+    padding: 28px 0 24px;
+    border-bottom: 1px solid var(--photocopy-black);
+  }
+  .row:last-child { border-bottom: 0; }
+  .wm {
+    font-family: var(--font-wordmark);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 0.86;
+    color: var(--photocopy-black);
+    white-space: nowrap;
+  }
+  .wm em { font-style: italic; }
+  .wm--favicon { font-size: 20px; }
+  .wm--nav     { font-size: 32px; }
+  .wm--cover   { font-size: 96px; }
+  .meta {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--photocopy-black);
+    opacity: 0.7;
+    min-width: 110px;
+    text-align: right;
+    padding-bottom: 4px;
+  }
+  .note { margin-top: 14px; font-family: var(--font-wordmark); font-style: italic; font-size: 12px; opacity: 0.7; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="card__kicker">Brand · Wordmark · Scale</div>
+  <h3 class="card__title">Three sizes, one idea.</h3>
+  <p class="card__sub">The wordmark is always set — never cropped, never replaced by an initial. If it won't fit, the surface is too small.</p>
+
+  <div class="row">
+    <span class="wm wm--favicon">Inkwell <em>Review</em></span>
+    <span class="meta">Favicon · 20px min</span>
+  </div>
+  <div class="row">
+    <span class="wm wm--nav">Inkwell <em>Review</em></span>
+    <span class="meta">Nav · 32px</span>
+  </div>
+  <div class="row">
+    <span class="wm wm--cover">Inkwell <em>Review</em></span>
+    <span class="meta">Cover · 96px +</span>
+  </div>
+
+  <p class="note">No icon mark. No monogram. No octopus. Just letters.</p>
+</div>
+</body>
+</html>

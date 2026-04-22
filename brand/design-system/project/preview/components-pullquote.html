@@ -1,0 +1,95 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  .card { padding: 24px 28px; }
+  .pq {
+    padding: 28px 32px 26px;
+    position: relative;
+    border-top: 4px solid var(--photocopy-black);
+    border-bottom: 4px solid var(--photocopy-black);
+  }
+  .pq--green { background: var(--paper-green); }
+  .pq--yellow { background: var(--paper-yellow); }
+
+  .pq blockquote {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 30px;
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+  }
+  .hl {
+    background: var(--photocopy-black);
+    padding: 0 0.22em 0.06em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+  .pq--green .hl  { color: var(--paper-green); }
+  .pq--yellow .hl { color: var(--paper-yellow); }
+
+  .t-circled {
+    position: relative;
+    display: inline-block;
+    padding: 0 0.22em;
+    z-index: 0;
+  }
+  .t-circled::before {
+    content: "";
+    position: absolute;
+    inset: -0.1em -0.08em -0.1em -0.08em;
+    border: 2.5px solid var(--photocopy-black);
+    border-radius: 50%;
+    transform: rotate(-3deg);
+    z-index: -1;
+  }
+
+  .cite {
+    margin-top: 18px;
+    padding-top: 12px;
+    border-top: 1.5px solid var(--photocopy-black);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .cite .who { font-family: var(--font-wordmark); font-style: italic; font-weight: 400; font-size: 14px; letter-spacing: 0; text-transform: none; }
+  .sig {
+    font-family: var(--font-wordmark);
+    font-style: italic;
+    font-size: 15px;
+  }
+
+  .spacer { height: 14px; }
+</style></head>
+<body><div class="card">
+  <div class="card__kicker">Components · Pull quote · Two moves</div>
+  <h3 class="card__title">Reverse, or circle.</h3>
+  <p class="card__sub">Reversed bars for a single phrase. Hand-drawn oval for a single word. Never both at once.</p>
+
+  <div class="pq pq--green">
+    <blockquote>
+      We measured the city for twenty years &amp; still could not <span class="hl">describe</span> its evening.
+    </blockquote>
+    <div class="cite">
+      <span class="who">— Interview, Mary Gray</span>
+      <span>Interviews · No. 033</span>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <div class="pq pq--yellow">
+    <blockquote>
+      <span class="t-circled">Ollie</span> is the only columnist who answers letters in full, albeit upside down.
+    </blockquote>
+    <div class="cite">
+      <span class="who"><span class="sig">— the editor</span></span>
+      <span>Voice · No. 032</span>
+    </div>
+  </div>
+</div></body></html>

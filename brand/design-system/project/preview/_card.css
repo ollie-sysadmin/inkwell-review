@@ -1,0 +1,36 @@
+/* Base for preview cards — a single 700px wide card on photocopy-white */
+@import url('../colors_and_type.css');
+html, body { margin: 0; padding: 0; background: var(--photocopy-white); color: var(--photocopy-black); font-family: var(--font-body); }
+.card {
+  box-sizing: border-box;
+  width: 700px;
+  padding: 28px 32px;
+  background: var(--photocopy-white);
+  color: var(--photocopy-black);
+}
+.card__kicker {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--photocopy-black);
+  margin-bottom: 16px;
+}
+.card__title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: -0.015em;
+  margin: 0 0 4px;
+  line-height: 1.05;
+}
+.card__sub {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 14px;
+  margin: 0 0 20px;
+  opacity: 0.8;
+}

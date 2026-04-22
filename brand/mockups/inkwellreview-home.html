@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inkwell Review — Statistical peculiarities of human behaviour, twice weekly.</title>
+<link rel="stylesheet" href="../design-system/project/colors_and_type.css">
+<style>
+  /* ============================================================
+     Inkwell Review — Homepage mockup (v2)
+     Fixes vs v1:
+     - Speckle reinstated with visible density + reliability
+     - Masthead converted to ink-reversed (max contrast with content)
+     - Lead story now has a stat-card visual
+     - Footer restructured to Namesake pattern with crawling Ollie
+     ============================================================ */
+
+  html, body { margin: 0; padding: 0; background: var(--photocopy-white); color: var(--photocopy-black); }
+  body { overflow-x: hidden; }
+
+  /* ---------- Hand-stamped rules (woodcut register) ----------
+     Three SVG wobble variants used as background on ::after / ::before
+     pseudo-elements. Wide tile + low-amplitude curve = imperfection
+     without "doodled" cuteness. */
+  :root {
+    --rule-wobble: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 6' preserveAspectRatio='none'><path d='M0 3.2 Q 75 1.8 150 3.2 T 300 3.2 T 450 3.2 T 600 3.2' stroke='%23111111' stroke-width='1.6' fill='none' stroke-linecap='round'/></svg>");
+    --rule-wobble-heavy: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 6' preserveAspectRatio='none'><path d='M0 3 Q 75 1.4 150 3 T 300 3 T 450 3 T 600 3' stroke='%23111111' stroke-width='2.4' fill='none' stroke-linecap='round'/></svg>");
+    --rule-wobble-double: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 12' preserveAspectRatio='none'><path d='M0 3 Q 75 1.6 150 3 T 300 3 T 450 3 T 600 3' stroke='%23111111' stroke-width='1.4' fill='none' stroke-linecap='round'/><path d='M0 9 Q 75 10.6 150 9 T 300 9 T 450 9 T 600 9' stroke='%23111111' stroke-width='1.4' fill='none' stroke-linecap='round'/></svg>");
+  }
+  .rule-wobble-bottom { position: relative; }
+  .rule-wobble-bottom::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+    height: 6px; background: var(--rule-wobble) repeat-x bottom; background-size: 600px 6px;
+    pointer-events: none;
+  }
+  .rule-wobble-bottom--heavy::after { background-image: var(--rule-wobble-heavy); }
+  .rule-wobble-bottom--double::after { height: 12px; background-image: var(--rule-wobble-double); background-size: 600px 12px; }
+  .rule-wobble-top { position: relative; }
+  .rule-wobble-top::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0;
+    height: 6px; background: var(--rule-wobble-heavy) repeat-x top; background-size: 600px 6px;
+    pointer-events: none;
+  }
+
+  /* Ink-jitter on reversed highlights — feTurbulence + feDisplacementMap.
+     Subtle scale (1.2) so the hl bar reads as hand-stamped, not glitched. */
+  .hl { filter: url(#ink-jitter); }
+
+  /* ---------- SPECKLE — genuinely random SVG scatter, not tiled radials ----
+     Two SVG files, each with ~90 circles placed at fully random coordinates
+     within a 720–780 px tile. Because each tile is large and densely seeded,
+     repeats are hard to pick out as a grid.
+       · body::before — #111 dots, multiply → visible on light surfaces
+       · body::after  — #E1E1E1 dots, screen → visible on ink (masthead, footer)
+  */
+  body::before {
+    content: "";
+    position: fixed; inset: 0; pointer-events: none; z-index: 200;
+    background-image: url("../assets/speckle-dark.svg");
+    background-repeat: repeat;
+    opacity: 0.85;
+    mix-blend-mode: multiply;
+  }
+  body::after {
+    content: "";
+    position: fixed; inset: 0; pointer-events: none; z-index: 201;
+    background-image: url("../assets/speckle-light.svg");
+    background-repeat: repeat;
+    opacity: 0.65;
+    mix-blend-mode: screen;
+  }
+
+  /* ============================================================
+     MASTHEAD — Monocle-style centered, type-only.
+     Wordmark centered, italic tagline beneath, double-rule, then
+     centered section nav row.
+     ============================================================ */
+  .mast {
+    background: var(--photocopy-black);
+    color: var(--paper-purple);
+    padding: 36px 40px 0;
+    position: relative; z-index: 1;
+  }
+  .mast__inner { max-width: 1180px; margin: 0 auto; text-align: center; }
+  .mast__wm {
+    display: inline-block;
+    font-family: var(--font-wordmark); font-weight: 400;
+    font-size: clamp(48px, 10vw, 132px);
+    line-height: 0.95; letter-spacing: -0.02em;
+    color: var(--paper-purple); text-decoration: none;
+    white-space: nowrap;
+  }
+  .mast__wm em { font-style: italic; margin-left: 0.18em; }
+  .mast__tag {
+    margin: 22px auto 28px;
+    font-family: var(--font-wordmark); font-style: italic;
+    font-size: 17px; line-height: 1;
+    color: var(--paper-purple);
+  }
+  .mast__rule { border-top: 6px double var(--paper-purple); }
+  .mast__nav {
+    display: flex; justify-content: center; gap: 28px;
+    padding: 18px 0 22px;
+  }
+  .mast__nav a {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--paper-purple); text-decoration: none;
+    padding: 6px 2px 8px;
+    border-bottom: 2px solid transparent;
+  }
+  .mast__nav a:hover { border-bottom-color: var(--paper-purple); opacity: 0.85; }
+  .mast__nav a.is-active {
+    border-bottom-color: var(--paper-purple);
+  }
+
+  /* ---------- Page container ---------- */
+  .page { max-width: 1180px; margin: 0 auto; padding: 0 40px 40px; }
+
+  /* ============================================================
+     LEAD — two-column (text + stat card)
+     ============================================================ */
+  .lead {
+    padding: 56px 0 40px;
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+  .lead__kicker {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    padding-bottom: 16px;
+    display: flex; gap: 14px; align-items: center;
+    margin-bottom: 20px;
+  }
+  .lead__swatch {
+    width: 14px; height: 14px; display: inline-block;
+    background: var(--paper-blue); border: 1.5px solid var(--photocopy-black);
+  }
+  .lead__headline {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: clamp(42px, 5.2vw, 72px);
+    line-height: 1.0; letter-spacing: -0.02em; margin: 0 0 20px;
+    text-wrap: balance;
+  }
+  .lead__headline .hl {
+    background: var(--photocopy-black);
+    color: var(--photocopy-white);
+    padding: 0 0.18em 0.08em;
+    box-decoration-break: clone; -webkit-box-decoration-break: clone;
+  }
+  .lead__standfirst {
+    font-family: var(--font-wordmark); font-style: italic; font-weight: 400;
+    font-size: 21px; line-height: 1.4; margin: 0 0 20px; max-width: 40em;
+  }
+  .lead__meta {
+    display: flex; gap: 12px; align-items: baseline;
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    flex-wrap: wrap;
+  }
+  .lead__meta em {
+    font-family: var(--font-wordmark); font-style: italic; font-weight: 400;
+    font-size: 14px; letter-spacing: 0; text-transform: none;
+  }
+  .lead__meta .dot { opacity: 0.45; }
+
+  /* ---- Stat card (the visual) ---- */
+  .stat {
+    background: var(--paper-blue);
+    border: 1.5px solid var(--photocopy-black);
+    padding: 24px 26px 22px;
+    display: flex; flex-direction: column; gap: 10px;
+    position: relative;
+  }
+  .stat__kicker {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    display: flex; justify-content: space-between;
+    padding-bottom: 10px;
+    border-bottom: 1.5px solid var(--photocopy-black);
+    margin: 0;
+  }
+  .stat__fig {
+    font-family: var(--font-wordmark); font-weight: 400;
+    font-size: clamp(120px, 18vw, 200px);
+    line-height: 0.86; letter-spacing: -0.04em;
+    margin: 8px 0 0;
+    color: var(--photocopy-black);
+    font-variant-numeric: lining-nums;
+  }
+  .stat__caption {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 15px; line-height: 1.2; letter-spacing: -0.005em;
+    text-transform: uppercase;
+    margin: 0;
+    max-width: 18ch;
+  }
+  .stat__caption .hl {
+    background: var(--photocopy-black);
+    color: var(--paper-blue);
+    padding: 0 0.18em 0.08em;
+    box-decoration-break: clone; -webkit-box-decoration-break: clone;
+  }
+  .stat__breakdown {
+    display: flex; gap: 14px; margin-top: 16px;
+    font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+  .stat__breakdown strong {
+    font-family: var(--font-wordmark); font-weight: 400; font-style: italic;
+    font-size: 14px;
+  }
+  .stat__source {
+    font-family: var(--font-body); font-style: italic; font-size: 12px;
+    margin: 12px 0 0; padding-top: 10px;
+    border-top: 1px solid #11111155;
+    color: #111111cc;
+  }
+
+  /* ============================================================
+     RECENT DESKS GRID
+     ============================================================ */
+  .recent {
+    margin-top: 56px;
+    position: relative;
+  }
+  .recent::before {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 50%; transform: translateX(-50%);
+    width: 100vw;
+    background-image: url("../assets/masthead-tray-ink.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100% auto;
+    opacity: 0.18;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .recent > * { position: relative; z-index: 1; }
+  .recent__head {
+    display: flex; align-items: baseline; gap: 18px;
+    padding-bottom: 18px;
+    margin-bottom: 22px;
+  }
+  .recent__n {
+    font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+    letter-spacing: 0.1em; opacity: 0.6;
+  }
+  .recent__head h2 {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 32px; letter-spacing: -0.01em; margin: 0;
+  }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .card {
+    border: 1.5px solid var(--photocopy-black);
+    padding: 18px 20px 20px;
+    background: var(--photocopy-white);
+    position: relative;
+    display: flex; flex-direction: column; gap: 10px;
+    min-height: 240px;
+  }
+  .card__swatch {
+    width: 14px; height: 14px;
+    position: absolute; top: 18px; left: 20px;
+    border: 1.5px solid var(--photocopy-black);
+  }
+  .card__kicker {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    padding-left: 24px; margin: 0;
+  }
+  .card__headline {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 24px; line-height: 1.05; letter-spacing: -0.01em;
+    margin: 6px 0 0;
+  }
+  .card__headline .hl {
+    background: var(--photocopy-black);
+    color: var(--photocopy-white);
+    padding: 0 0.18em 0.08em;
+    box-decoration-break: clone; -webkit-box-decoration-break: clone;
+  }
+  .card__standfirst {
+    font-family: var(--font-wordmark); font-style: italic; font-weight: 400;
+    font-size: 16px; line-height: 1.4; margin: 0;
+  }
+  .card__foot {
+    margin-top: auto; padding-top: 12px;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; gap: 12px;
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  }
+
+  /* ---------- Section ornament (Penguin/woodcut dingbat) ----------
+     Three-glyph fleuron used to break sections. DM Serif Display
+     italic, paper-purple, generous breathing room. */
+  .ornament {
+    text-align: center;
+    margin: 56px 0 8px;
+    font-family: var(--font-wordmark); font-style: italic; font-weight: 400;
+    font-size: 28px; letter-spacing: 0.6em;
+    color: var(--paper-purple);
+    line-height: 1;
+  }
+
+  /* ============================================================
+     EDITOR'S LETTER — where Ollie earns his portrait
+     ============================================================ */
+  .editor {
+    margin-top: 72px;
+    padding: 48px 0 40px;
+    display: grid; grid-template-columns: 320px 1fr; gap: 48px; align-items: center;
+  }
+  .editor__ollie {
+    display: block;
+    width: 100%; height: auto;
+  }
+  .editor__body h3 {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    margin: 0 0 14px;
+    padding-bottom: 14px;
+  }
+  .editor__head {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 40px; line-height: 1.02; letter-spacing: -0.01em;
+    margin: 0 0 16px; text-wrap: balance;
+  }
+  .editor__body p {
+    font-family: var(--font-body); font-size: 17px; line-height: 1.58;
+    margin: 0 0 12px; max-width: 56ch;
+  }
+  .editor__lede::first-letter {
+    font-family: var(--font-display); font-weight: 800;
+    float: left;
+    font-size: 5.4em; line-height: 0.84;
+    padding: 6px 12px 0 0;
+    color: var(--photocopy-black);
+  }
+  .editor__sig {
+    margin: 20px 0 2px;
+    font-family: var(--font-wordmark); font-style: italic; font-weight: 400;
+    font-size: 28px; line-height: 1;
+  }
+  .editor__sig::before { content: "— "; font-style: normal; }
+  .editor__role {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    opacity: 0.7; margin: 0;
+  }
+
+  /* ============================================================
+     SUBSCRIBE STRIP (stays outside the footer, per feedback)
+     ============================================================ */
+  .sub {
+    margin-top: 56px;
+    padding: 28px 32px;
+    background: var(--paper-purple);
+    border: 1.5px solid var(--photocopy-black);
+    display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; align-items: center;
+  }
+  .sub__kicker {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    margin: 0 0 10px;
+  }
+  .sub__headline {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 24px; line-height: 1.15; letter-spacing: -0.01em;
+    margin: 0; text-wrap: balance;
+  }
+  .sub__headline em { font-family: var(--font-wordmark); font-weight: 400; font-size: 26px; }
+  .sub__form { display: flex; gap: 0; }
+  .sub__form input {
+    flex: 1; padding: 12px 14px;
+    font-family: var(--font-body); font-size: 15px;
+    background: var(--photocopy-white);
+    border: 1.5px solid var(--photocopy-black);
+    border-right: 0; outline: none;
+  }
+  .sub__form input:focus { background: var(--paper-yellow); }
+  .sub__form button {
+    padding: 12px 22px;
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
+    background: var(--photocopy-black); color: var(--paper-purple);
+    border: 1.5px solid var(--photocopy-black);
+    cursor: pointer;
+  }
+
+  /* ============================================================
+     FOOTER — Namesake pattern with crawling Ollie
+     ============================================================ */
+  .foot {
+    position: relative;
+    margin-top: 0;
+    padding: 80px 40px 28px;
+    background: var(--photocopy-black);
+    color: var(--paper-purple);
+    /* NOTE: overflow stays visible so the crawling Ollie can cross the
+       boundary between the subscribe strip and the footer, like the
+       Namesake snail. */
+  }
+  .foot__inner { max-width: 1180px; margin: 0 auto; }
+
+  /* Link columns */
+  .foot__cols {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr 1fr;
+    gap: 48px;
+    padding-bottom: 56px;
+  }
+  .foot__brand h5 {
+    font-family: var(--font-wordmark); font-weight: 400; font-style: italic;
+    font-size: 28px; line-height: 1; letter-spacing: -0.01em;
+    margin: 0 0 12px;
+    color: var(--paper-purple);
+  }
+  .foot__brand p {
+    font-family: var(--font-body); font-size: 14px; line-height: 1.5;
+    max-width: 32ch; margin: 0 0 16px;
+    color: var(--paper-purple); opacity: 0.82;
+  }
+  .foot__brand .cc {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em;
+    opacity: 0.6;
+  }
+  .foot__col h5 {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase;
+    margin: 0 0 16px;
+    color: var(--paper-purple);
+  }
+  .foot__col a {
+    display: block;
+    font-family: var(--font-body); font-size: 15px; line-height: 2;
+    color: var(--paper-purple); text-decoration: none;
+    opacity: 0.88;
+  }
+  .foot__col a:hover { text-decoration: underline; opacity: 1; }
+
+  /* Printer's mark endpiece — small purple Ollie above the colophon */
+  .foot__mark {
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+    margin-top: 24px; padding-top: 28px;
+    border-top: 1px dashed color-mix(in srgb, var(--paper-purple) 35%, transparent);
+  }
+  .foot__mark img {
+    height: 76px; width: auto; opacity: 0.85;
+    display: block;
+  }
+  .foot__mark span {
+    font-family: var(--font-wordmark); font-style: italic; font-weight: 400;
+    font-size: 14px; color: var(--paper-purple); opacity: 0.7;
+    letter-spacing: 0.04em;
+  }
+
+  /* Bottom bar */
+  .foot__bar {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 32px;
+    margin-top: 32px; padding-top: 18px;
+    border-top: 1.5px solid var(--paper-purple);
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em;
+    opacity: 0.9; flex-wrap: wrap;
+  }
+  .foot__bar .r {
+    font-family: var(--font-wordmark); font-style: italic; font-size: 14px; letter-spacing: 0;
+  }
+  .foot__social { display: flex; gap: 14px; align-items: center; }
+  .foot__social a {
+    width: 28px; height: 28px;
+    border: 1.5px solid var(--paper-purple);
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--paper-purple); text-decoration: none;
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 11px; letter-spacing: 0;
+    opacity: 0.88;
+  }
+  .foot__social a:hover { background: var(--paper-purple); color: var(--photocopy-black); }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 960px) {
+    .lead { grid-template-columns: 1fr; gap: 32px; }
+    .cards { grid-template-columns: 1fr 1fr; }
+    .editor { grid-template-columns: 1fr; gap: 28px; }
+    .editor__ollie { max-width: 420px; margin: 0 auto; }
+    .sub { grid-template-columns: 1fr; }
+    .mast__nav { max-width: 100%; justify-content: flex-start; }
+    .foot__cols { grid-template-columns: 1fr 1fr; gap: 32px; }
+  }
+  @media (max-width: 640px) {
+    .cards { grid-template-columns: 1fr; }
+    .mast__main { flex-direction: column; align-items: flex-start; }
+    .foot__cols { grid-template-columns: 1fr; }
+    .stat__fig { font-size: 120px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SVG filter defs — ink-jitter applied to .hl reversed-highlight bars -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="ink-jitter" x="-2%" y="-15%" width="104%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="2" seed="3" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.4"/>
+    </filter>
+  </defs>
+</svg>
+
+<!-- MASTHEAD — Monocle-style, centered, type-only -->
+<header class="mast">
+  <div class="mast__inner">
+    <a href="#" class="mast__wm" aria-label="Inkwell Review — home">Inkwell<em>Review</em></a>
+    <div class="mast__tag">Statistical peculiarities of human behaviour.</div>
+    <div class="mast__rule" aria-hidden="true"></div>
+    <nav class="mast__nav">
+      <a href="#recent" class="is-active">Latest</a>
+      <a href="#archive">Archive</a>
+      <a href="#subscribe">Subscribe</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page">
+
+  <!-- LEAD STORY -->
+  <section class="lead">
+    <div>
+      <div class="lead__kicker rule-wobble-bottom">
+        <span class="lead__swatch"></span>
+        <span>Data · This week's lead · Cartography</span>
+      </div>
+      <h1 class="lead__headline">The <span class="hl">115 countries</span> that will not send you home.</h1>
+      <p class="lead__standfirst">Every extradition treaty on Earth, mapped. One click toggles which country is doing the asking.</p>
+      <div class="lead__meta">
+        <span>By <em>Ollie Inkwell</em></span>
+        <span class="dot">·</span>
+        <span>19 April 2026</span>
+        <span class="dot">·</span>
+        <span>12 min read</span>
+        <span class="dot">·</span>
+        <span>Interactive map</span>
+      </div>
+    </div>
+
+    <aside class="stat" aria-label="Lead story stat card">
+      <div class="stat__kicker"><span>Data · Fig. I</span><span>194 countries</span></div>
+      <div class="stat__fig">115</div>
+      <p class="stat__caption">Countries that will <span class="hl">not</span> send you home to the United States.</p>
+      <div class="stat__breakdown">
+        <span>79 treaties</span><strong>·</strong><span>115 without</span>
+      </div>
+      <p class="stat__source">Source: US Department of State, 2024; Inkwell Review analysis.</p>
+    </aside>
+  </section>
+
+  <!-- RECENT DESKS -->
+  <section class="recent">
+    <div class="recent__head rule-wobble-bottom rule-wobble-bottom--double">
+      <h2>Recent Curiosities</h2>
+    </div>
+    <div class="cards">
+      <article class="card">
+        <span class="card__swatch" style="background: var(--paper-yellow);"></span>
+        <p class="card__kicker">Voice · Fri 18 Apr</p>
+        <h3 class="card__headline">The <span class="hl">polite conspiracy</span> of averages.</h3>
+        <p class="card__standfirst">Why the mean is lying to the city planners — and always was.</p>
+        <div class="card__foot"><span>Ollie Inkwell</span><span>5 min</span></div>
+      </article>
+
+      <article class="card">
+        <span class="card__swatch" style="background: var(--paper-green);"></span>
+        <p class="card__kicker">Cities · Tue 15 Apr</p>
+        <h3 class="card__headline">Where the world's commutes <span class="hl">actually shrank</span>.</h3>
+        <p class="card__standfirst">Fourteen OECD economies, ten years, one line that bends.</p>
+        <div class="card__foot"><span>Rupa Das</span><span>7 min</span></div>
+      </article>
+
+      <article class="card">
+        <span class="card__swatch" style="background: var(--paper-brown);"></span>
+        <p class="card__kicker">Archive · Fri 11 Apr</p>
+        <h3 class="card__headline">Chocolate bars, <span class="hl">1970 to now</span>, weighed.</h3>
+        <p class="card__standfirst">Fifty years of shrinkage, in grams and in confectionery.</p>
+        <div class="card__foot"><span>Inkwell Review</span><span>4 min</span></div>
+      </article>
+
+      <article class="card">
+        <span class="card__swatch" style="background: var(--paper-purple);"></span>
+        <p class="card__kicker">Cover · Tue 08 Apr</p>
+        <h3 class="card__headline">What the median human <span class="hl">did yesterday</span>.</h3>
+        <p class="card__standfirst">Twenty-four hours, seven billion overlapping schedules, one composite day.</p>
+        <div class="card__foot"><span>Ollie Inkwell</span><span>6 min</span></div>
+      </article>
+
+      <article class="card">
+        <span class="card__swatch" style="background: var(--paper-blue);"></span>
+        <p class="card__kicker">Data · Fri 04 Apr</p>
+        <h3 class="card__headline">The age at which <span class="hl">everything</span> kills you.</h3>
+        <p class="card__standfirst">Leading causes of death across an eighty-year span, charted as one continuous swap.</p>
+        <div class="card__foot"><span>Inkwell Review</span><span>8 min</span></div>
+      </article>
+
+      <article class="card">
+        <span class="card__swatch" style="background: var(--paper-pink);"></span>
+        <p class="card__kicker">Interviews · Tue 01 Apr</p>
+        <h3 class="card__headline">The city planner who keeps a <span class="hl">spreadsheet of regrets</span>.</h3>
+        <p class="card__standfirst">An interview on the uses of measuring what didn't happen.</p>
+        <div class="card__foot"><span>Ollie Inkwell</span><span>9 min</span></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- EDITOR'S LETTER -->
+  <section class="editor rule-wobble-top rule-wobble-bottom rule-wobble-bottom--heavy">
+    <img class="editor__ollie" src="../assets/ollie-portrait-ink.png" alt="Prof. Ollie Inkwell, the common octopus who edits this publication.">
+    <div class="editor__body">
+      <h3 class="rule-wobble-bottom">From the desk</h3>
+      <p class="editor__head">Two pieces a week, a year of them, and then we'll see.</p>
+      <p class="editor__lede">Inkwell Review is an experiment. Every Tuesday and Friday we publish a chart that earns its space — a statistical peculiarity, properly sourced. No hot takes. No listicles.</p>
+      <p class="editor__sig">Ollie</p>
+      <p class="editor__role">Editor · Common octopus · Since issue 01</p>
+    </div>
+  </section>
+
+  <!-- SUBSCRIBE STRIP -->
+  <section class="sub">
+    <div>
+      <p class="sub__kicker">Twice weekly · Free</p>
+      <h4 class="sub__headline">Charts worth repeating <em>at dinner</em> — in your inbox Tuesday and Friday.</h4>
+    </div>
+    <form class="sub__form" onsubmit="event.preventDefault()">
+      <input type="email" placeholder="reader@dinnerparty.club" aria-label="Email address">
+      <button type="submit">Subscribe</button>
+    </form>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="foot">
+  <div class="foot__inner">
+
+    <div class="foot__cols">
+      <div class="foot__brand">
+        <h5>Inkwell Review</h5>
+        <p>Statistical peculiarities of human behaviour, charted properly and argued well. A twice-weekly publication edited by Prof. Ollie Inkwell.</p>
+        <p class="cc">© 2026 Inkwell Review · Vol. I</p>
+      </div>
+
+      <div class="foot__col">
+        <h5>About</h5>
+        <a href="#">Ollie</a>
+        <a href="#">Methodology</a>
+        <a href="#">Press</a>
+        <a href="#">Brand</a>
+      </div>
+
+      <div class="foot__col">
+        <h5>Legal</h5>
+        <a href="#">Terms</a>
+        <a href="#">Privacy</a>
+        <a href="#">Sources</a>
+        <a href="#">Contact</a>
+      </div>
+
+      <div class="foot__col">
+        <h5>Read</h5>
+        <a href="#">Latest</a>
+        <a href="#">Archive</a>
+        <a href="#">RSS</a>
+        <a href="#">Substack</a>
+      </div>
+    </div>
+
+    <div class="foot__bar">
+      <span>inkwellreview.com · twice weekly</span>
+      <div class="foot__social" aria-label="Follow">
+        <a href="#" aria-label="Instagram">IG</a>
+        <a href="#" aria-label="X">X</a>
+        <a href="#" aria-label="LinkedIn">in</a>
+        <a href="#" aria-label="Bluesky">Bs</a>
+        <a href="#" aria-label="Threads">Th</a>
+        <a href="#" aria-label="RSS">RSS</a>
+      </div>
+      <span class="r">Set in Atkinson Hyperlegible Soft &amp; DM Serif Display.</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

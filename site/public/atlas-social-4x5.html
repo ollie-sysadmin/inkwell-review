@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inkwell · Atlas · 4:5 social card</title>
+<link rel="stylesheet" href="/brand/design-system/project/colors_and_type.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<style>
+  /* ============================================================
+     4:5 SOCIAL CARD · The Extradition Atlas
+     Session 5 · 21 April 2026
+
+     Standalone 1080×1350 composition built for the portrait
+     frame, not auto-cropped from the website plate. Uses the
+     now-locked Cartography grammar inside the plate (black-ish
+     ocean at #1F1F1F, solid paper-colour country fills, white
+     anchor, photocopy-white country borders). Outside the plate,
+     the card wears the Data desk's paper-blue ground — the
+     existing `.post--chart` social-kit grammar.
+
+     Composition (top to bottom):
+       · Masthead — small wordmark + double rule
+       · Kicker + headline with circled-emphasis mark
+       · The plate (cartouche, suitcase stamp, map, mini-legend)
+       · Big misreg stat (78) + caption
+       · Footer — source line + inkwellreview.com URL
+     ============================================================ */
+
+  html, body {
+    margin: 0; padding: 0;
+    background: #222;
+    font-family: var(--font-body);
+    color: var(--photocopy-black);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+
+  .card {
+    width: 1080px;
+    height: 1350px;
+    background: var(--paper-blue);
+    color: var(--photocopy-black);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 44px 60px 40px;
+    box-sizing: border-box;
+  }
+
+  /* Speckle overlay — the brand's page-texture grammar applied to the card */
+  .card::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: url("/brand/assets/speckle-dark.svg");
+    background-repeat: repeat;
+    opacity: 0.85; mix-blend-mode: multiply;
+    pointer-events: none;
+  }
+
+  /* ---- MASTHEAD ---- */
+  .mast {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    position: relative;
+  }
+  .mast__wm {
+    font-family: var(--font-wordmark);
+    font-weight: 400;
+    font-size: 40px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .mast__wm em {
+    font-style: italic;
+    margin-left: 0.18em;
+  }
+  .mast__url {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  .mast-rule {
+    border: 0;
+    border-top: 5px double var(--photocopy-black);
+    margin: 14px 0 30px;
+  }
+
+  /* ---- KICKER + HEADLINE ---- */
+  .kicker {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    margin: 0 0 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .kicker__swatch {
+    width: 16px; height: 16px;
+    background: var(--photocopy-black);
+    display: inline-block;
+  }
+  .headline {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 68px;
+    line-height: 0.98;
+    letter-spacing: -0.025em;
+    margin: 0 0 18px;
+    text-wrap: balance;
+  }
+  .headline .circ {
+    position: relative;
+    display: inline-block;
+    padding: 0 0.14em;
+    z-index: 0;
+  }
+  .headline .circ::before {
+    content: "";
+    position: absolute;
+    inset: -0.04em -0.1em -0.06em -0.1em;
+    border: 3.5px solid var(--photocopy-black);
+    border-radius: 50%;
+    transform: rotate(-2.2deg);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* ---- THE PLATE ---- */
+  .plate {
+    position: relative;
+    border: 2px solid var(--photocopy-black);
+    background: var(--photocopy-white);
+    padding: 22px 22px 18px;
+    margin: 0;
+  }
+  .plate__cartouche {
+    position: absolute;
+    top: -2px; left: 24px;
+    background: var(--paper-blue);
+    padding: 0 12px 0 10px;
+    transform: translateY(-52%);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .plate__fig {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--photocopy-black);
+    border-right: 2px solid var(--photocopy-black);
+    padding-right: 12px;
+  }
+  .plate__title {
+    font-family: var(--font-wordmark);
+    font-style: italic;
+    font-size: 20px;
+    letter-spacing: -0.01em;
+    color: var(--photocopy-black);
+  }
+  .plate__stamp {
+    position: absolute;
+    top: -2px; right: 24px;
+    background: var(--paper-blue);
+    padding: 8px 12px;
+    transform: translateY(-45%);
+  }
+  .plate__stamp svg {
+    display: block;
+    width: 36px; height: 26px;
+  }
+
+  .map-wrap {
+    position: relative;
+    background: #1F1F1F;
+    border: 1.5px solid var(--photocopy-black);
+    overflow: hidden;
+  }
+  .map-wrap svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .country {
+    fill: var(--photocopy-black);
+    stroke: var(--photocopy-white);
+    stroke-width: 0.6;
+    stroke-opacity: 0.7;
+  }
+  .country--treaty {
+    fill: var(--paper-green);
+    stroke-opacity: 0.8;
+  }
+  .country--reluctant {
+    fill: var(--paper-yellow);
+    stroke-opacity: 0.8;
+  }
+  .country--haven {
+    fill: var(--paper-pink);
+    stroke-opacity: 0.8;
+  }
+  .country--anchor {
+    fill: var(--photocopy-white);
+    stroke: var(--photocopy-black);
+    stroke-width: 1;
+    stroke-opacity: 1;
+  }
+
+  /* Mini-legend inside the plate, under the map */
+  .plate__legend {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1.5px solid var(--photocopy-black);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .plate__legend .item { display: flex; align-items: center; gap: 8px; }
+  .plate__legend .sw {
+    width: 20px; height: 12px;
+    border: 1.5px solid var(--photocopy-black);
+    display: inline-block;
+  }
+  .sw--anchor   { background: var(--photocopy-white); }
+  .sw--treaty   { background: var(--paper-green); }
+  .sw--haven    { background: var(--paper-pink); }
+  .sw--notreaty { background: var(--photocopy-black); }
+
+  /* ---- BIG MISREG STAT ---- */
+  .stat-big {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 28px;
+    align-items: center;
+    margin: 0;
+  }
+  .stat-big__value {
+    font-family: var(--font-wordmark);
+    font-weight: 400;
+    font-size: 260px;
+    line-height: 0.85;
+    letter-spacing: -0.04em;
+    color: var(--photocopy-black);
+    position: relative;
+    isolation: isolate;
+    font-variant-numeric: lining-nums;
+  }
+  .stat-big__value::before {
+    content: attr(data-value);
+    position: absolute;
+    left: 5px; top: 6px;
+    color: var(--paper-blue);
+    -webkit-text-stroke: 2px var(--photocopy-black);
+    z-index: -1;
+    mix-blend-mode: multiply;
+  }
+  .stat-big__caption {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 34px;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    text-transform: none;
+  }
+  .stat-big__caption em {
+    font-family: var(--font-wordmark);
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  /* ---- FOOTER ---- */
+  .card-footer {
+    border-top: 2.5px solid var(--photocopy-black);
+    padding-top: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  .card-footer em {
+    font-family: var(--font-wordmark);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 14px;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--photocopy-black);
+    opacity: 0.7;
+  }
+  .card-footer__url {
+    font-size: 18px;
+    letter-spacing: 0.12em;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- MASTHEAD -->
+  <header class="mast-wrap">
+    <div class="mast">
+      <span class="mast__wm">Inkwell <em>Review</em></span>
+      <span class="mast__url">Issue 01 · Data</span>
+    </div>
+    <hr class="mast-rule">
+  </header>
+
+  <!-- KICKER + HEADLINE -->
+  <div class="head-block">
+    <p class="kicker">
+      <span class="kicker__swatch" aria-hidden="true"></span>
+      Data · Cartography · Issue 01
+    </p>
+    <h1 class="headline">
+      The <span class="circ">78&nbsp;countries</span> that will not send you home.
+    </h1>
+  </div>
+
+  <!-- PLATE -->
+  <section class="plate" aria-label="The Extradition Atlas, anchored on the United States">
+    <div class="plate__cartouche">
+      <span class="plate__fig">Fig. I</span>
+      <span class="plate__title">The Extradition Atlas &nbsp;·&nbsp; anchored on the United States</span>
+    </div>
+    <div class="plate__stamp" aria-hidden="true">
+      <svg viewBox="0 0 30 22">
+        <g stroke="#111111" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="26" height="13" rx="0.5"/>
+          <path d="M10 7 V3.5 h10 V7"/>
+          <line x1="15" y1="11" x2="15" y2="16"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="map-wrap">
+      <svg id="atlas-map-4x5" viewBox="40 30 880 420" preserveAspectRatio="xMidYMid meet" role="img" aria-label="World map of US extradition treaty partners"></svg>
+    </div>
+
+    <div class="plate__legend">
+      <span class="item"><span class="sw sw--anchor"></span> United States</span>
+      <span class="item"><span class="sw sw--treaty"></span> Treaty partner</span>
+      <span class="item"><span class="sw sw--haven"></span> Fugitive haven</span>
+      <span class="item"><span class="sw sw--notreaty"></span> No treaty</span>
+    </div>
+  </section>
+
+  <!-- BIG MISREG STAT — complementary to the headline number.
+       Headline says where the US can't reach (78); this stat
+       says where it can (117 treaty partners) plus the wrinkle
+       (10 of those rarely honour it). -->
+  <section class="stat-big">
+    <div class="stat-big__value" data-value="117">117</div>
+    <div class="stat-big__caption">
+      that <em>will</em> by treaty.<br>
+      Ten of them <em>rarely</em> do.
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="card-footer">
+    <span><em>Source: US State Department, 18 U.S.C. § 3181. Full list on the web edition.</em></span>
+    <span class="card-footer__url">inkwellreview.com</span>
+  </footer>
+
+</div>
+
+<script>
+  // US extradition treaty partners (subset of treaty-data.ts — only what
+  // this card needs: the US-anchor view).
+  const US_TREATY = new Set([
+    '008','028','032','036','040','044','052','056','084','068','070','076','100','124','152','170','178','188','191','192',
+    '196','203','208','212','214','218','818','222','233','748','242','246','250','270','276','288','300','308','320','328',
+    '332','340','344','348','352','356','368','372','376','380','388','392','400','404','296','383','428','426','430','438',
+    '440','442','454','458','470','584','480','484','583','492','499','104','520','528','554','558','566','807','578','586',
+    '585','591','598','600','604','608','616','620','642','659','662','670','674','688','690','694','702','703','705','710',
+    '410','724','144','740','752','756','834','764','776','780','792','798','826','858','862','894','716'
+  ]);
+  const US_RELUCTANT = new Set(['192','068','218','818','352','558','586','756','862','716']);
+  const FUGITIVE_HAVENS = new Set([
+    '643','156','364','408','704','398','496','158','784','682','634','414','048','512','887','499','020','028','732','504',
+    '148','140','180','231','262','706','096','116','418','050','524','064','462','004'
+  ]);
+  const US_ID = '840';
+
+  function classify(id) {
+    if (id === US_ID) return 'country country--anchor';
+    if (FUGITIVE_HAVENS.has(id) && (!US_TREATY.has(id) || US_RELUCTANT.has(id))) return 'country country--haven';
+    if (US_RELUCTANT.has(id)) return 'country country--reluctant';
+    if (US_TREATY.has(id)) return 'country country--treaty';
+    return 'country';
+  }
+
+  const projection = d3.geoNaturalEarth1().scale(175).translate([480, 270]);
+  const path = d3.geoPath(projection);
+
+  d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then((world) => {
+    const countries = topojson.feature(world, world.objects.countries).features;
+    const svg = d3.select('#atlas-map-4x5');
+    svg.selectAll('path')
+      .data(countries)
+      .join('path')
+      .attr('d', path)
+      .attr('class', (d) => classify(String(d.id).padStart(3, '0')));
+  });
+</script>
+
+</body>
+</html>

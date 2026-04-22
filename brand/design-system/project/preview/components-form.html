@@ -1,0 +1,28 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  .card { padding: 28px 32px; }
+  .row { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  label { font-family: var(--font-display); font-weight: 700; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+  input, select { height: 48px; border: 2.5px solid var(--photocopy-black); background: var(--photocopy-white); padding: 0 14px; font-family: var(--font-body); font-size: 15px; color: var(--photocopy-black); border-radius: 0; outline: none; min-width: 220px; }
+  input:focus, select:focus { background: var(--paper-yellow); }
+  input::placeholder { color: #11111188; }
+  .check { display: flex; align-items: center; gap: 10px; font-family: var(--font-body); font-size: 14px; }
+  .check input { min-width: 0; width: 22px; height: 22px; accent-color: var(--photocopy-black); }
+  button { height: 48px; padding: 0 22px; border: 2.5px solid var(--photocopy-black); background: var(--photocopy-black); color: var(--photocopy-white); font-family: var(--font-display); font-weight: 800; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; border-radius: 0; cursor: pointer; }
+</style></head>
+<body><div class="card">
+  <div class="card__kicker">Forms — chunky borders, photocopy-white fields</div>
+  <div class="row">
+    <div class="field"><label>Email</label><input placeholder="reader@dinnerparty.club"></div>
+    <div class="field"><label>Cadence</label>
+      <select><option>Tue + Fri</option><option>Friday only</option></select>
+    </div>
+    <button>Subscribe</button>
+  </div>
+  <div class="row" style="margin-top:18px">
+    <div class="check"><input type="checkbox" checked><span>Send me the chart-of-the-week</span></div>
+    <div class="check"><input type="checkbox"><span>Occasional Ollie asides</span></div>
+  </div>
+</div></body></html>

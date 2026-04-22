@@ -1,0 +1,287 @@
+/* =========================================================
+   Inkwell Review — Colors & Type
+   "Photocopied zine energy. Dinner-party chart credibility.
+    An editor who happens to be an octopus."
+   =========================================================
+   STRUCTURE
+   - Photocopy core: two colours that never move
+   - Category colours: one flat pastel per slug page, wall-to-wall
+   - Site accent: purple, sparing, for home page highlights only
+   - Typography: Atkinson Hyperlegible Soft (everywhere) + DM Serif
+     Display (wordmark only) + JetBrains Mono (tabular data only)
+   ========================================================= */
+
+/* ---- Atkinson Hyperlegible Soft (local) ---- */
+@font-face{font-family:"Atkinson Hyperlegible Soft";font-style:normal;font-weight:200;font-display:swap;src:url("fonts/AtkinsonHyperlegibleSoft-ExtraLight.woff2") format("woff2");}
+@font-face{font-family:"Atkinson Hyperlegible Soft";font-style:italic;font-weight:200;font-display:swap;src:url("fonts/AtkinsonHyperlegibleSoft-ExtraLightItalic.woff2") format("woff2");}
+@font-face{font-family:"Atkinson Hyperlegible Soft";font-style:normal;font-weight:300;font-display:swap;src:url("fonts/AtkinsonHyperlegibleSoft-Light.woff2") format("woff2");}
+@font-face{font-family:"Atkinson Hyperlegible Soft";font-style:italic;font-weight:300;font-display:swap;src:url("fonts/AtkinsonHyperlegibleSoft-LightItalic.woff2") format("woff2");}
+@font-face{font-family:"Atkinson Hyperlegible Soft";font-style:normal;font-weight:400;font-display:swap;src:url("fonts/AtkinsonHyperlegibleSoft-Regular.woff2") format("woff2");}
+@font-face{font-family:"Atkinson Hyperlegible Soft";font-style:italic;font-weight:400;font-display:swap;src:url("fonts/AtkinsonHyperlegibleSoft-RegularItalic.woff2") format("woff2");}
+@font-face{font-family:"Atkinson Hyperlegible Soft";font-style:normal;font-weight:500;font-display:swap;src:url("fonts/AtkinsonHyperlegibleSoft-Medium.woff2") format("woff2");}
+@font-face{font-family:"Atkinson Hyperlegible Soft";font-style:italic;font-weight:500;font-display:swap;src:url("fonts/AtkinsonHyperlegibleSoft-MediumItalic.woff2") format("woff2");}
+@font-face{font-family:"Atkinson Hyperlegible Soft";font-style:normal;font-weight:600;font-display:swap;src:url("fonts/AtkinsonHyperlegibleSoft-SemiBold.woff2") format("woff2");}
+@font-face{font-family:"Atkinson Hyperlegible Soft";font-style:italic;font-weight:600;font-display:swap;src:url("fonts/AtkinsonHyperlegibleSoft-SemiBoldItalic.woff2") format("woff2");}
+@font-face{font-family:"Atkinson Hyperlegible Soft";font-style:normal;font-weight:700;font-display:swap;src:url("fonts/AtkinsonHyperlegibleSoft-Bold.woff2") format("woff2");}
+@font-face{font-family:"Atkinson Hyperlegible Soft";font-style:italic;font-weight:700;font-display:swap;src:url("fonts/AtkinsonHyperlegibleSoft-BoldItalic.woff2") format("woff2");}
+@font-face{font-family:"Atkinson Hyperlegible Soft";font-style:normal;font-weight:800;font-display:swap;src:url("fonts/AtkinsonHyperlegibleSoft-ExtraBold.woff2") format("woff2");}
+@font-face{font-family:"Atkinson Hyperlegible Soft";font-style:italic;font-weight:800;font-display:swap;src:url("fonts/AtkinsonHyperlegibleSoft-ExtraBoldItalic.woff2") format("woff2");}
+
+/* Serif for the wordmark & giant footer type (Namesake-style) */
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap');
+/* Mono — tabular numerals only */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
+:root {
+  /* ---- PHOTOCOPY CORE — the two colours that never move ---- */
+  --photocopy-black: #111111;
+  --photocopy-white: #E1E1E1;
+
+  /* ---- PASTEL PALETTE — each is a single slug-page background ---- */
+  --paper-purple: #CDA5EF;
+  --paper-pink:   #ECADD4;
+  --paper-blue:   #96C7F2;
+  --paper-yellow: #ECDD85;
+  --paper-green:  #97CF9C;
+  --paper-brown:  #DDB896;
+
+  /* ---- CATEGORY MAPPING — locked ---- */
+  --cat-cover:      var(--paper-purple);  /* Cover / lead essays */
+  --cat-data:       var(--paper-blue);    /* Data & charts */
+  --cat-voice:      var(--paper-yellow);  /* Voice / Ollie / opinion */
+  --cat-cities:     var(--paper-green);   /* Cities & environment */
+  --cat-archive:    var(--paper-brown);   /* Archive / history */
+  --cat-interviews: var(--paper-pink);    /* Interviews */
+
+  /* ---- SITE ACCENT — purple, used sparingly on photocopy-grey surfaces ---- */
+  --accent: var(--paper-purple);
+
+  /* ---- DEFAULTS (home page) ---- */
+  --bg:            var(--photocopy-white);
+  --fg:            var(--photocopy-black);
+  --fg-muted:      #1111119a;
+  --fg-subtle:     #11111166;
+  --border:        #11111122;
+  --border-strong: #111111;
+  --rule:          #11111133;
+
+  /* ---- TYPE ---- */
+  --font-display: "Atkinson Hyperlegible Soft", "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;
+  --font-body:    "Atkinson Hyperlegible Soft", "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-wordmark: "DM Serif Display", "Times New Roman", Georgia, serif;
+
+  --fs-xs:   0.78rem;
+  --fs-sm:   0.9rem;
+  --fs-base: 1.05rem;
+  --fs-lg:   1.25rem;
+  --fs-xl:   1.75rem;
+  --fs-2xl:  2.5rem;
+  --fs-3xl:  3.75rem;
+  --fs-4xl:  5.5rem;
+  --fs-5xl:  8rem;
+
+  --lh-tight: 1.02;
+  --lh-snug:  1.15;
+  --lh-body:  1.55;
+
+  --tracking-display: -0.01em;
+  --tracking-caps: 0.1em;
+
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px;
+  --s-5:24px; --s-6:32px; --s-7:48px; --s-8:64px; --s-9:96px;
+
+  --r-0: 0;
+  --r-2: 2px;
+  --r-4: 4px;
+  --r-full: 999px;
+
+  --measure-body: 34rem;
+}
+
+/* ---------------------------------------------------------
+   CATEGORY PAGE BACKGROUNDS
+   Apply to <body> or a top-level wrapper for slug pages.
+   One category = one wall-to-wall background. NEVER mix two
+   categories / pastels on the same page.
+   --------------------------------------------------------- */
+.cat-cover      { --bg: var(--cat-cover);      background: var(--cat-cover); }
+.cat-data       { --bg: var(--cat-data);       background: var(--cat-data); }
+.cat-voice      { --bg: var(--cat-voice);      background: var(--cat-voice); }
+.cat-cities     { --bg: var(--cat-cities);     background: var(--cat-cities); }
+.cat-archive    { --bg: var(--cat-archive);    background: var(--cat-archive); }
+.cat-interviews { --bg: var(--cat-interviews); background: var(--cat-interviews); }
+
+/* Home / index surfaces are always photocopy white */
+.home { --bg: var(--photocopy-white); background: var(--photocopy-white); }
+
+/* =========================================================
+   TYPE SEMANTICS
+   ========================================================= */
+
+html, body { background: var(--bg); color: var(--fg); font-family: var(--font-body); }
+
+/* Serif wordmark — the "Inkwell Review" lockup and the giant
+   footer wordmark that adopts the page colour */
+.t-wordmark {
+  font-family: var(--font-wordmark);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 0.86;
+}
+
+.t-wordmark--giant {
+  font-family: var(--font-wordmark);
+  font-weight: 400;
+  font-size: clamp(6rem, 22vw, 22rem);
+  line-height: 0.82;
+  letter-spacing: -0.02em;
+  color: var(--bg); /* adopts page colour when on ink */
+}
+
+.t-display, h1, .t-h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--fs-3xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-display);
+  color: var(--fg);
+  margin: 0;
+}
+
+h2, .t-h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tracking-display);
+  color: var(--fg);
+  margin: 0;
+}
+
+h3, .t-h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-xl);
+  line-height: var(--lh-snug);
+  color: var(--fg);
+  margin: 0;
+}
+
+.t-standfirst {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: var(--fs-lg);
+  line-height: var(--lh-body);
+  color: var(--fg);
+}
+
+p, .t-body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
+  color: var(--fg);
+}
+
+.t-meta, .t-kicker {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+.t-num, code {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.t-num-big {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--fs-3xl);
+  line-height: 0.9;
+  letter-spacing: var(--tracking-display);
+  font-variant-numeric: tabular-nums;
+}
+
+.t-caption, figcaption {
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  font-style: italic;
+  color: var(--fg-muted);
+}
+
+/* =========================================================
+   NAMESAKE MOVES — the signature typographic techniques
+   ========================================================= */
+
+/* Reversed-contrast highlight block — the "yours to change" move.
+   Wrap an inline run of words. Paints a black bar behind them and
+   reverses the ink to the current page colour. Works on any bg. */
+.t-highlight {
+  background: var(--photocopy-black);
+  color: var(--bg);
+  padding: 0.02em 0.25em 0.08em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Hand-drawn oval circling a word or short phrase — the "Guides" move */
+.t-circled {
+  position: relative;
+  display: inline-block;
+  padding: 0 0.28em;
+  z-index: 0;
+}
+.t-circled::before {
+  content: "";
+  position: absolute;
+  inset: -0.14em -0.1em -0.12em -0.1em;
+  border: 2.5px solid var(--photocopy-black);
+  border-radius: 50%;
+  transform: rotate(-2.5deg);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* =========================================================
+   RULES
+   ========================================================= */
+.rule-hair   { border:0; border-top: 1px solid var(--border); }
+.rule-strong { border:0; border-top: 2px solid var(--photocopy-black); }
+.rule-thick  { border:0; border-top: 4px solid var(--photocopy-black); }
+.rule-double { border:0; border-top: 6px double var(--photocopy-black); }
+
+/* =========================================================
+   SPECKLE TEXTURE
+   Namesake-style dot/star noise. Apply to pastel category pages
+   or sparingly on photocopy-white. Never on ink.
+   ========================================================= */
+.speckle {
+  position: relative;
+}
+.speckle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 7% 12%,  #11111144 0.9px, transparent 1.2px),
+    radial-gradient(circle at 83% 28%, #11111133 0.6px, transparent 0.9px),
+    radial-gradient(circle at 23% 47%, #11111122 0.5px, transparent 0.8px),
+    radial-gradient(circle at 68% 64%, #1111113a 0.7px, transparent 1px),
+    radial-gradient(circle at 41% 81%, #11111126 0.5px, transparent 0.8px),
+    radial-gradient(circle at 91% 91%, #11111133 0.8px, transparent 1.1px),
+    radial-gradient(circle at 14% 72%, #11111133 0.5px, transparent 0.8px),
+    radial-gradient(circle at 54% 8%,  #11111128 0.6px, transparent 0.9px);
+  background-size: 340px 340px, 420px 420px, 280px 280px, 380px 380px, 300px 300px, 460px 460px, 360px 360px, 400px 400px;
+  opacity: 0.9;
+  mix-blend-mode: multiply;
+  z-index: 1;
+}
+/* children of .speckle need to sit above the pseudo */
+.speckle > * { position: relative; z-index: 2; }

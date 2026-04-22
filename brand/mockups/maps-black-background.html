@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inkwell · Maps on black — palette-consistency exploration</title>
+<link rel="stylesheet" href="../design-system/project/colors_and_type.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<style>
+  /* ============================================================
+     MAPS-ON-BLACK exploration — Session 5 · 21 April 2026
+
+     Premise (Dene): the desk-coloured map background means a
+     piece's chart implicitly inherits the desk hue — Data is blue,
+     Cover is purple, etc. That's a consistency loss across map
+     artefacts. This mockup tests the alternative: ink-black map
+     background across every map, and the six brand paper colours
+     used only at country level.
+
+     Two variants for A/B:
+
+     Variant A · Solid paper fills        — cleaner, more modern,
+                                            highest contrast against
+                                            the black plate.
+     Variant B · Hatched paper fills with — preserves the photocopy
+                 photocopy-white hatching   grammar (Mona Chalabi
+                                            move, Bickford-Smith
+                                            print-shop reference).
+
+     Both maps in each variant render the same status palette in
+     the same positions — green = top tier, yellow = secondary,
+     pink = haven, white = anchor — so a returning reader builds
+     palette memory across maps regardless of desk.
+     ============================================================ */
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--photocopy-white);
+    color: var(--photocopy-black);
+    font-family: var(--font-body);
+  }
+
+  .page {
+    max-width: 1480px;
+    margin: 0 auto;
+    padding: 56px 40px 80px;
+  }
+
+  /* ---- Header ---- */
+  .doc-head {
+    margin: 0 0 48px;
+    padding-bottom: 18px;
+    border-bottom: 6px double var(--photocopy-black);
+  }
+  .doc-head__kicker {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    margin: 0 0 14px;
+  }
+  .doc-head__title {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: clamp(32px, 4vw, 48px); line-height: 1;
+    letter-spacing: -0.02em; margin: 0 0 14px;
+  }
+  .doc-head__stand {
+    font-family: var(--font-wordmark); font-style: italic;
+    font-size: 19px; line-height: 1.4; max-width: 70ch; margin: 0;
+  }
+
+  /* ---- Variant section ---- */
+  .variant {
+    margin: 0 0 72px;
+  }
+  .variant__head {
+    display: flex; align-items: baseline; gap: 16px;
+    border-bottom: 1.5px solid var(--photocopy-black);
+    padding-bottom: 12px; margin: 0 0 28px;
+  }
+  .variant__tag {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    background: var(--photocopy-black); color: var(--photocopy-white);
+    padding: 4px 10px 5px;
+  }
+  .variant__title {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 22px; letter-spacing: -0.01em; margin: 0;
+  }
+  .variant__note {
+    font-family: var(--font-wordmark); font-style: italic;
+    font-size: 15px; color: #555; margin-left: auto;
+  }
+
+  /* ---- Two-up map grid ---- */
+  .pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+  @media (max-width: 1100px) {
+    .pair { grid-template-columns: 1fr; }
+  }
+
+  /* ---- Each plate ---- */
+  .plate {
+    border: 1.5px solid var(--photocopy-black);
+    background: var(--photocopy-white);
+    padding: 22px 22px 18px;
+    position: relative;
+  }
+  .plate__cartouche {
+    position: absolute; top: -1.5px; left: 18px;
+    background: var(--photocopy-white);
+    padding: 0 10px 0 8px;
+    transform: translateY(-52%);
+    display: flex; align-items: baseline; gap: 10px;
+  }
+  .plate__fig {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    border-right: 1.5px solid var(--photocopy-black);
+    padding-right: 10px;
+  }
+  .plate__title {
+    font-family: var(--font-wordmark); font-style: italic;
+    font-size: 15px;
+  }
+  .plate__deskhint {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: #888; margin-left: 6px;
+  }
+
+  /* ---- THE MAP — black background ---- */
+  .map-wrap {
+    background: var(--photocopy-black);
+    border: 1.5px solid var(--photocopy-black);
+    margin: 18px 0 14px;
+    overflow: hidden;
+    position: relative;
+  }
+  .map-wrap svg {
+    display: block; width: 100%; height: auto;
+  }
+  /* All borders: low-opacity photocopy-white. Only the lattice. */
+  .map-wrap .country {
+    fill: var(--photocopy-black);
+    stroke: var(--photocopy-white);
+    stroke-width: 0.4;
+    stroke-opacity: 0.28;
+  }
+
+  /* ============================================================
+     VARIANT A · Solid paper-colour fills on black
+     ============================================================ */
+  .v-solid .country--top      { fill: var(--paper-green);  stroke-opacity: 0.65; stroke-width: 0.5; }
+  .v-solid .country--second   { fill: var(--paper-yellow); stroke-opacity: 0.65; stroke-width: 0.5; }
+  .v-solid .country--haven    { fill: var(--paper-pink);   stroke-opacity: 0.65; stroke-width: 0.5; }
+  .v-solid .country--bloc     { fill: var(--paper-purple); stroke-opacity: 0.65; stroke-width: 0.5; }
+  .v-solid .country--suspend  { fill: var(--paper-brown);  stroke-opacity: 0.65; stroke-width: 0.5; }
+  .v-solid .country--anchor   { fill: var(--photocopy-white); stroke: var(--photocopy-black); stroke-opacity: 1; stroke-width: 1; }
+
+  /* ============================================================
+     VARIANT B · Hatched paper fills, photocopy-white hatch lines
+     The hatches keep the Inkwell photocopy grammar but flip the
+     ink lines to white so they read on the dark plate.
+     ============================================================ */
+  .v-hatch .country--top      { fill: url(#hatch-green-w);  stroke-opacity: 0.65; stroke-width: 0.5; }
+  .v-hatch .country--second   { fill: url(#hatch-yellow-w); stroke-opacity: 0.65; stroke-width: 0.5; }
+  .v-hatch .country--haven    { fill: url(#hatch-pink-w);   stroke-opacity: 0.65; stroke-width: 0.5; }
+  .v-hatch .country--bloc     { fill: url(#hatch-purple-w); stroke-opacity: 0.65; stroke-width: 0.5; }
+  .v-hatch .country--suspend  { fill: url(#hatch-brown-w);  stroke-opacity: 0.65; stroke-width: 0.5; }
+  .v-hatch .country--anchor   { fill: var(--photocopy-white); stroke: var(--photocopy-black); stroke-opacity: 1; stroke-width: 1; }
+
+  /* ============================================================
+     VARIANT C · Inverted — white plate, solid black no-record
+     Dene's proposal (21 April 2026): paper colours on a light
+     plate, ink-black for "no record" countries. Three anchor-
+     marker sub-variants (C-1, C-2, C-3) below — each draws from
+     a locked brand move so the anchor reads as distinct without
+     introducing a new visual idiom.
+     ============================================================ */
+  .v-white .map-wrap {
+    background: var(--photocopy-white);
+  }
+  .v-white .country {
+    /* Default = no-record / no-treaty: solid ink, ink border. */
+    fill: var(--photocopy-black);
+    stroke: var(--photocopy-black);
+    stroke-width: 0.45;
+    stroke-opacity: 0.55;
+  }
+  .v-white .country--top      { fill: var(--paper-green);  stroke-opacity: 0.65; }
+  .v-white .country--second   { fill: var(--paper-yellow); stroke-opacity: 0.65; }
+  .v-white .country--haven    { fill: var(--paper-pink);   stroke-opacity: 0.65; }
+  .v-white .country--bloc     { fill: var(--paper-purple); stroke-opacity: 0.65; }
+  .v-white .country--suspend  { fill: var(--paper-brown);  stroke-opacity: 0.65; }
+  /* Anchor base: solid ink-black like no-record. Each sub-variant
+     replaces the fill or adds an overlay to make the anchor pop. */
+  .v-white .country--anchor {
+    fill: var(--photocopy-black);
+    stroke: var(--photocopy-black);
+    stroke-opacity: 0.55;
+    stroke-width: 0.45;
+  }
+  /* C-1 · COUNTRY-CODE TILE — Atkinson 800 caps "USA"
+     repeated diagonally across the ink-black anchor. Reads as
+     a passport stamp / banknote watermark surface. */
+  .v-c1 .country--anchor {
+    fill: url(#anchor-code-tile);
+    stroke: var(--photocopy-black);
+    stroke-width: 0.7;
+    stroke-opacity: 0.9;
+  }
+  /* C-2 · MINI-OLLIE TILE — simplified cephalopod silhouette
+     (the publication's character) tiled diagonally across the
+     ink-black anchor. The Voice desk character planted on the
+     map as wallpaper. */
+  .v-c2 .country--anchor {
+    fill: url(#anchor-ollie-tile);
+    stroke: var(--photocopy-black);
+    stroke-width: 0.7;
+    stroke-opacity: 0.9;
+  }
+  /* C-3 · VICTORIAN-CURIOSITY TILE — nautical anchor symbol
+     (literal "anchor country") tiled diagonally. Line-engraving
+     curiosity-cabinet feel, ties to the Inkwell editorial
+     pose. */
+  .v-c3 .country--anchor {
+    fill: url(#anchor-victorian-tile);
+    stroke: var(--photocopy-black);
+    stroke-width: 0.7;
+    stroke-opacity: 0.9;
+  }
+
+  /* ============================================================
+     VARIANT D · Anchor = desk colour
+     The cleanest of the lot if we accept that the desk colour
+     does double duty (chrome + anchor). Each piece's anchor
+     reflects its desk's editorial position.
+     ============================================================ */
+  .v-d .map-wrap { background: var(--photocopy-white); }
+  .v-d .country {
+    fill: var(--photocopy-black);
+    stroke: var(--photocopy-black);
+    stroke-width: 0.45;
+    stroke-opacity: 0.55;
+  }
+  .v-d .country--top      { fill: var(--paper-green);  stroke-opacity: 0.65; }
+  .v-d .country--second   { fill: var(--paper-yellow); stroke-opacity: 0.65; }
+  .v-d .country--haven    { fill: var(--paper-pink);   stroke-opacity: 0.65; }
+  .v-d .country--bloc     { fill: var(--paper-purple); stroke-opacity: 0.65; }
+  .v-d .country--suspend  { fill: var(--paper-brown);  stroke-opacity: 0.65; }
+  /* Per-desk anchor colour. */
+  .v-d-data .country--anchor {
+    fill: var(--paper-blue);
+    stroke: var(--photocopy-black);
+    stroke-width: 0.9;
+    stroke-opacity: 1;
+  }
+  .v-d-cover .country--anchor {
+    fill: var(--paper-purple);
+    stroke: var(--photocopy-black);
+    stroke-width: 0.9;
+    stroke-opacity: 1;
+  }
+  /* Legend swatches mirror the per-desk anchor */
+  .v-d-data .key__sw--anchor   { background: var(--paper-blue); }
+  .v-d-cover .key__sw--anchor  { background: var(--paper-purple); }
+  .v-d .key__sw--norec         { background: var(--photocopy-black); }
+
+  /* 3-up triplet for evaluating the three anchor treatments */
+  .triplet {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 22px;
+  }
+  @media (max-width: 1200px) {
+    .triplet { grid-template-columns: 1fr; }
+  }
+  /* Triplet plates are slightly tighter than the pair plates */
+  .triplet .plate { padding: 18px 18px 14px; }
+  .triplet .plate__cartouche { left: 14px; }
+
+  /* Variant C legend swatches mirror the in-map fills.
+     Anchor swatch shows the marker treatment per sub-variant. */
+  .v-white .key__sw--norec   { background: var(--photocopy-black); }
+  .v-white .key__sw--anchor  { background: var(--photocopy-black); }
+  /* Per-sub-variant anchor swatch — visualises the in-map fill. */
+  .v-c1 .key__sw--anchor {
+    background: var(--photocopy-black);
+    color: var(--photocopy-white);
+    font-family: var(--font-display, sans-serif);
+    font-weight: 800;
+    font-size: 6px;
+    letter-spacing: 0.1em;
+    text-align: center;
+    line-height: 14px;
+    transform: rotate(-28deg);
+  }
+  .v-c1 .key__sw--anchor::before { content: "USA"; }
+  .v-c2 .key__sw--anchor {
+    background-color: var(--photocopy-black);
+    background-image: radial-gradient(var(--photocopy-white) 0.6px, transparent 1px);
+    background-size: 4px 4px;
+    background-position: center;
+  }
+  .v-c3 .key__sw--anchor {
+    background-color: var(--photocopy-black);
+    background-image:
+      linear-gradient(45deg, transparent 45%, var(--photocopy-white) 45%, var(--photocopy-white) 55%, transparent 55%);
+    background-size: 5px 5px;
+  }
+
+  /* ---- Legend strip ---- */
+  .key {
+    display: flex; flex-wrap: wrap; gap: 16px 22px;
+    padding-top: 10px;
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+  }
+  .key__item { display: flex; align-items: center; gap: 8px; }
+  .key__sw {
+    width: 18px; height: 11px;
+    border: 1px solid var(--photocopy-black);
+    background: var(--photocopy-black);
+    display: inline-block;
+  }
+  .key__sw--top      { background: var(--paper-green); }
+  .key__sw--second   { background: var(--paper-yellow); }
+  .key__sw--haven    { background: var(--paper-pink); }
+  .key__sw--anchor   { background: var(--photocopy-white); }
+  .key__sw--norec    { background: var(--photocopy-black); }
+  /* Hatched legend swatches mirror the in-map fill */
+  .v-hatch .key__sw--top      { background-color: var(--paper-green);  background-image: repeating-linear-gradient(45deg, #E1E1E199 0 1px, transparent 1px 4px); }
+  .v-hatch .key__sw--second   { background-color: var(--paper-yellow); background-image: repeating-linear-gradient(-45deg, #E1E1E199 0 1px, transparent 1px 4px); }
+  .v-hatch .key__sw--haven    { background-color: var(--paper-pink);   background-image: repeating-linear-gradient(45deg, #E1E1E199 0 1px, transparent 1px 4px), repeating-linear-gradient(-45deg, #E1E1E199 0 1px, transparent 1px 4px); }
+
+  .source {
+    font-family: var(--font-body); font-style: italic;
+    font-size: 11px; color: #555; margin: 8px 0 0;
+  }
+
+  /* ---- Decision panel at the bottom ---- */
+  .decision {
+    margin: 64px 0 0;
+    padding: 24px 26px;
+    border: 1.5px solid var(--photocopy-black);
+    background: var(--photocopy-white);
+  }
+  .decision h3 {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 14px; letter-spacing: 0.18em; text-transform: uppercase;
+    margin: 0 0 12px;
+  }
+  .decision p {
+    font-family: var(--font-body); font-size: 14px; line-height: 1.55;
+    margin: 0 0 10px;
+  }
+  .decision strong {
+    font-family: var(--font-display); font-weight: 800;
+  }
+</style>
+</head>
+<body>
+
+<!-- Inline SVG defs for the white-hatch patterns used in Variant B.
+     Each pattern: solid paper-colour rect + photocopy-white diagonal
+     line at the same density as the live template's ink hatching. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- ANCHOR PATTERN-AS-IDENTITY tiles, all diagonal, all on
+         ink-black. Each is a different motif printed across the
+         entire anchor country like a banknote watermark or a
+         passport stamp surface. -->
+
+    <!-- C-1 · Country code in Atkinson 500 caps, diagonal tile.
+         Lighter weight + tighter letter-spacing + tighter tile
+         repeat for a passport-stamp / banknote watermark feel. -->
+    <pattern id="anchor-code-tile" patternUnits="userSpaceOnUse" width="24" height="12" patternTransform="rotate(-28)">
+      <rect width="24" height="12" fill="#111111"/>
+      <text x="0" y="9.5" font-family="Atkinson Hyperlegible, sans-serif" font-weight="500" font-size="11" letter-spacing="0.04em" fill="#E1E1E1">USA</text>
+    </pattern>
+
+    <!-- C-2 · Mini Ollie (cephalopod naturalist silhouette),
+         diagonal tile. The character planted as wallpaper. -->
+    <pattern id="anchor-ollie-tile" patternUnits="userSpaceOnUse" width="20" height="20" patternTransform="rotate(-28)">
+      <rect width="20" height="20" fill="#111111"/>
+      <g transform="translate(4,3)" stroke="#E1E1E1" stroke-width="0.7" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <!-- mantle (head + body) -->
+        <ellipse cx="6" cy="4.5" rx="4.2" ry="3.6"/>
+        <!-- eyes -->
+        <circle cx="4.4" cy="4.6" r="0.55" fill="#E1E1E1"/>
+        <circle cx="7.6" cy="4.6" r="0.55" fill="#E1E1E1"/>
+        <!-- tentacles, 6 wavy lines -->
+        <path d="M2.2 7 Q 1.4 9.5, 2.2 12"/>
+        <path d="M3.8 8 Q 3.4 10.5, 4 13"/>
+        <path d="M5.2 8.4 Q 5.0 11, 5.6 13.5"/>
+        <path d="M6.8 8.4 Q 7.0 11, 6.4 13.5"/>
+        <path d="M8.2 8 Q 8.6 10.5, 8 13"/>
+        <path d="M9.8 7 Q 10.6 9.5, 9.8 12"/>
+      </g>
+    </pattern>
+
+    <!-- C-3 · Victorian curiosity — a nautical anchor symbol
+         (literal "anchor country"), diagonal tile. Hand-drawn
+         line-engraving style. -->
+    <pattern id="anchor-victorian-tile" patternUnits="userSpaceOnUse" width="18" height="18" patternTransform="rotate(-28)">
+      <rect width="18" height="18" fill="#111111"/>
+      <g transform="translate(4,2)" stroke="#E1E1E1" stroke-width="0.85" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <!-- ring at top -->
+        <circle cx="5" cy="2" r="1.1"/>
+        <!-- shaft -->
+        <line x1="5" y1="3.1" x2="5" y2="11"/>
+        <!-- crossbar -->
+        <line x1="2" y1="4.6" x2="8" y2="4.6"/>
+        <!-- curved arms -->
+        <path d="M1.8 9 Q 5 13, 8.2 9"/>
+        <!-- fluke ticks -->
+        <line x1="1.8" y1="9" x2="1.2" y2="7.6"/>
+        <line x1="8.2" y1="9" x2="8.8" y2="7.6"/>
+      </g>
+    </pattern>
+    <pattern id="hatch-green-w" patternUnits="userSpaceOnUse" width="4" height="4" patternTransform="rotate(45)">
+      <rect width="4" height="4" fill="#97CF9C"/>
+      <line x1="0" y1="0" x2="0" y2="4" stroke="#E1E1E1" stroke-width="0.9" opacity="0.7"/>
+    </pattern>
+    <pattern id="hatch-yellow-w" patternUnits="userSpaceOnUse" width="4" height="4" patternTransform="rotate(-45)">
+      <rect width="4" height="4" fill="#ECDD85"/>
+      <line x1="0" y1="0" x2="0" y2="4" stroke="#E1E1E1" stroke-width="0.9" opacity="0.7"/>
+    </pattern>
+    <pattern id="hatch-pink-w" patternUnits="userSpaceOnUse" width="4" height="4" patternTransform="rotate(45)">
+      <rect width="4" height="4" fill="#ECADD4"/>
+      <line x1="0" y1="0" x2="0" y2="4" stroke="#E1E1E1" stroke-width="1" opacity="0.75"/>
+      <line x1="0" y1="0" x2="4" y2="0" stroke="#E1E1E1" stroke-width="1" opacity="0.75"/>
+    </pattern>
+    <pattern id="hatch-purple-w" patternUnits="userSpaceOnUse" width="4" height="4" patternTransform="rotate(45)">
+      <rect width="4" height="4" fill="#CDA5EF"/>
+      <line x1="0" y1="0" x2="0" y2="4" stroke="#E1E1E1" stroke-width="0.9" opacity="0.7"/>
+    </pattern>
+    <pattern id="hatch-brown-w" patternUnits="userSpaceOnUse" width="5" height="5">
+      <rect width="5" height="5" fill="#DDB896"/>
+      <circle cx="2.5" cy="2.5" r="0.85" fill="#E1E1E1" opacity="0.85"/>
+    </pattern>
+  </defs>
+</svg>
+
+<div class="page">
+
+  <header class="doc-head">
+    <p class="doc-head__kicker">Brand · Cartography · Palette exploration</p>
+    <h1 class="doc-head__title">Maps on black — testing palette consistency across desks</h1>
+    <p class="doc-head__stand">
+      Today's live template gives every map a desk-coloured background — Data is blue, Cover is purple, and so on. The two pieces below test the alternative: ink-black plates across every map, with the six brand paper colours doing the work at country level. Same status palette in the same positions, regardless of desk.
+    </p>
+  </header>
+
+  <!-- ============================================================
+       VARIANT A · Solid paper-colour fills on black
+       ============================================================ -->
+  <section class="variant v-solid">
+    <header class="variant__head">
+      <span class="variant__tag">Variant A</span>
+      <h2 class="variant__title">Solid paper-colour fills</h2>
+      <span class="variant__note">Cleaner, higher contrast — but loses the photocopy grammar.</span>
+    </header>
+
+    <div class="pair">
+
+      <figure class="plate">
+        <div class="plate__cartouche">
+          <span class="plate__fig">Fig. I</span>
+          <span class="plate__title">The Extradition Atlas</span>
+          <span class="plate__deskhint">Data desk · was paper-blue</span>
+        </div>
+        <div class="map-wrap">
+          <svg id="map-a1" viewBox="40 30 880 420" preserveAspectRatio="xMidYMid meet" aria-label="Extradition Atlas — solid fills"></svg>
+        </div>
+        <div class="key">
+          <span class="key__item"><span class="key__sw key__sw--anchor"></span>United States</span>
+          <span class="key__item"><span class="key__sw key__sw--top"></span>Treaty in force</span>
+          <span class="key__item"><span class="key__sw key__sw--second"></span>Reluctant</span>
+          <span class="key__item"><span class="key__sw key__sw--haven"></span>Fugitive haven</span>
+          <span class="key__item"><span class="key__sw key__sw--norec"></span>No treaty</span>
+        </div>
+        <p class="source">Anchor: United States. Status palette uses the brand paper colours; black plate is constant.</p>
+      </figure>
+
+      <figure class="plate">
+        <div class="plate__cartouche">
+          <span class="plate__fig">Fig. II</span>
+          <span class="plate__title">Fugitive Destinations</span>
+          <span class="plate__deskhint">Cover desk · was paper-purple</span>
+        </div>
+        <div class="map-wrap">
+          <svg id="map-a2" viewBox="40 30 880 420" preserveAspectRatio="xMidYMid meet" aria-label="Fugitive Destinations — solid fills"></svg>
+        </div>
+        <div class="key">
+          <span class="key__item"><span class="key__sw key__sw--anchor"></span>United States</span>
+          <span class="key__item"><span class="key__sw key__sw--top"></span>Top destination</span>
+          <span class="key__item"><span class="key__sw key__sw--second"></span>Secondary destination</span>
+          <span class="key__item"><span class="key__sw key__sw--haven"></span>Quiet haven</span>
+          <span class="key__item"><span class="key__sw key__sw--norec"></span>No record</span>
+        </div>
+        <p class="source">Anchor: United States. Same palette, same plate. The two maps now read as siblings.</p>
+      </figure>
+
+    </div>
+  </section>
+
+  <!-- ============================================================
+       VARIANT B · Hatched paper-colour fills on black, white hatching
+       ============================================================ -->
+  <section class="variant v-hatch">
+    <header class="variant__head">
+      <span class="variant__tag">Variant B</span>
+      <h2 class="variant__title">Hatched paper fills, photocopy-white hatch lines</h2>
+      <span class="variant__note">Preserves the photocopy grammar — Chalabi/Bickford-Smith hand still legible on dark.</span>
+    </header>
+
+    <div class="pair">
+
+      <figure class="plate">
+        <div class="plate__cartouche">
+          <span class="plate__fig">Fig. I</span>
+          <span class="plate__title">The Extradition Atlas</span>
+          <span class="plate__deskhint">Data desk · was paper-blue</span>
+        </div>
+        <div class="map-wrap">
+          <svg id="map-b1" viewBox="40 30 880 420" preserveAspectRatio="xMidYMid meet" aria-label="Extradition Atlas — hatched fills"></svg>
+        </div>
+        <div class="key">
+          <span class="key__item"><span class="key__sw key__sw--anchor"></span>United States</span>
+          <span class="key__item"><span class="key__sw key__sw--top"></span>Treaty in force</span>
+          <span class="key__item"><span class="key__sw key__sw--second"></span>Reluctant</span>
+          <span class="key__item"><span class="key__sw key__sw--haven"></span>Fugitive haven</span>
+          <span class="key__item"><span class="key__sw key__sw--norec"></span>No treaty</span>
+        </div>
+        <p class="source">Hatch lines flip from ink-black to photocopy-white so the texture survives the dark plate.</p>
+      </figure>
+
+      <figure class="plate">
+        <div class="plate__cartouche">
+          <span class="plate__fig">Fig. II</span>
+          <span class="plate__title">Fugitive Destinations</span>
+          <span class="plate__deskhint">Cover desk · was paper-purple</span>
+        </div>
+        <div class="map-wrap">
+          <svg id="map-b2" viewBox="40 30 880 420" preserveAspectRatio="xMidYMid meet" aria-label="Fugitive Destinations — hatched fills"></svg>
+        </div>
+        <div class="key">
+          <span class="key__item"><span class="key__sw key__sw--anchor"></span>United States</span>
+          <span class="key__item"><span class="key__sw key__sw--top"></span>Top destination</span>
+          <span class="key__item"><span class="key__sw key__sw--second"></span>Secondary destination</span>
+          <span class="key__item"><span class="key__sw key__sw--haven"></span>Quiet haven</span>
+          <span class="key__item"><span class="key__sw key__sw--norec"></span>No record</span>
+        </div>
+        <p class="source">Same status palette as the Atlas; the hatching gives the dark map the lithograph-plate feel.</p>
+      </figure>
+
+    </div>
+  </section>
+
+  <!-- ============================================================
+       VARIANT C · White plate, ink no-record (Dene's proposal)
+       Three anchor-marker sub-variants (C-1, C-2, C-3), all on
+       the Atlas (US anchor) so the only variable in the comparison
+       is the anchor treatment.
+       ============================================================ -->
+  <section class="variant v-white">
+    <header class="variant__head">
+      <span class="variant__tag">Variant C</span>
+      <h2 class="variant__title">White plate · ink no-record · three anchor treatments</h2>
+      <span class="variant__note">Each anchor marker draws from a locked brand move, never invents a new visual.</span>
+    </header>
+
+    <div class="triplet">
+
+      <figure class="plate v-c1">
+        <div class="plate__cartouche">
+          <span class="plate__fig">C-1</span>
+          <span class="plate__title">Country-code tile</span>
+        </div>
+        <div class="map-wrap">
+          <svg id="map-c1" viewBox="40 30 880 420" preserveAspectRatio="xMidYMid meet" aria-label="Atlas — country-code tile anchor"></svg>
+        </div>
+        <div class="key">
+          <span class="key__item"><span class="key__sw key__sw--anchor"></span>United States</span>
+          <span class="key__item"><span class="key__sw key__sw--top"></span>Treaty</span>
+          <span class="key__item"><span class="key__sw key__sw--second"></span>Reluctant</span>
+          <span class="key__item"><span class="key__sw key__sw--haven"></span>Haven</span>
+          <span class="key__item"><span class="key__sw key__sw--norec"></span>No treaty</span>
+        </div>
+        <p class="source">"USA" set in Atkinson 500 caps, photocopy-white, repeated diagonally across the ink-black anchor — tighter letter-spacing and a closer tile repeat for a passport-stamp / banknote watermark feel.</p>
+      </figure>
+
+      <figure class="plate v-c2">
+        <div class="plate__cartouche">
+          <span class="plate__fig">C-2</span>
+          <span class="plate__title">Mini-Ollie tile</span>
+        </div>
+        <div class="map-wrap">
+          <svg id="map-c2" viewBox="40 30 880 420" preserveAspectRatio="xMidYMid meet" aria-label="Atlas — mini-Ollie tile anchor"></svg>
+        </div>
+        <div class="key">
+          <span class="key__item"><span class="key__sw key__sw--anchor"></span>United States</span>
+          <span class="key__item"><span class="key__sw key__sw--top"></span>Treaty</span>
+          <span class="key__item"><span class="key__sw key__sw--second"></span>Reluctant</span>
+          <span class="key__item"><span class="key__sw key__sw--haven"></span>Haven</span>
+          <span class="key__item"><span class="key__sw key__sw--norec"></span>No treaty</span>
+        </div>
+        <p class="source">Simplified Ollie silhouette — mantle, eyes, six tentacles — tiled diagonally across the ink-black anchor. The publication's character planted on the data point.</p>
+      </figure>
+
+      <figure class="plate v-c3">
+        <div class="plate__cartouche">
+          <span class="plate__fig">C-3</span>
+          <span class="plate__title">Victorian-curiosity tile</span>
+        </div>
+        <div class="map-wrap">
+          <svg id="map-c3" viewBox="40 30 880 420" preserveAspectRatio="xMidYMid meet" aria-label="Atlas — Victorian-curiosity tile anchor"></svg>
+        </div>
+        <div class="key">
+          <span class="key__item"><span class="key__sw key__sw--anchor"></span>United States</span>
+          <span class="key__item"><span class="key__sw key__sw--top"></span>Treaty</span>
+          <span class="key__item"><span class="key__sw key__sw--second"></span>Reluctant</span>
+          <span class="key__item"><span class="key__sw key__sw--haven"></span>Haven</span>
+          <span class="key__item"><span class="key__sw key__sw--norec"></span>No treaty</span>
+        </div>
+        <p class="source">A literal nautical anchor — Victorian line-engraving feel — tiled diagonally across the ink-black anchor country. Cabinet-of-curiosities grammar.</p>
+      </figure>
+
+    </div>
+  </section>
+
+  <!-- ============================================================
+       VARIANT D · Anchor = desk colour
+       The cleanest move if we accept the desk colour doing double
+       duty (chrome + anchor). Both current pieces work cleanly:
+       Atlas on Data desk → paper-blue anchor (no tier collision);
+       FD on Cover desk → paper-purple anchor (no tier collision
+       since FD doesn't use the EU-bloc class).
+       ============================================================ -->
+  <section class="variant v-d">
+    <header class="variant__head">
+      <span class="variant__tag">Variant D</span>
+      <h2 class="variant__title">Anchor = desk colour</h2>
+      <span class="variant__note">Chart adopts the desk's chromatic accent at the anchor.</span>
+    </header>
+
+    <div class="pair">
+
+      <figure class="plate v-d-data">
+        <div class="plate__cartouche">
+          <span class="plate__fig">Fig. I</span>
+          <span class="plate__title">The Extradition Atlas</span>
+          <span class="plate__deskhint">Data desk · paper-blue anchor</span>
+        </div>
+        <div class="map-wrap">
+          <svg id="map-d1" viewBox="40 30 880 420" preserveAspectRatio="xMidYMid meet" aria-label="Atlas — desk-colour anchor"></svg>
+        </div>
+        <div class="key">
+          <span class="key__item"><span class="key__sw key__sw--anchor"></span>United States</span>
+          <span class="key__item"><span class="key__sw key__sw--top"></span>Treaty</span>
+          <span class="key__item"><span class="key__sw key__sw--second"></span>Reluctant</span>
+          <span class="key__item"><span class="key__sw key__sw--haven"></span>Haven</span>
+          <span class="key__item"><span class="key__sw key__sw--norec"></span>No treaty</span>
+        </div>
+        <p class="source">Data desk → anchor adopts paper-blue. No tier collision (paper-blue isn't used as a tier colour anywhere). The chart now shares its anchor accent with the kicker swatch and the masthead.</p>
+      </figure>
+
+      <figure class="plate v-d-cover">
+        <div class="plate__cartouche">
+          <span class="plate__fig">Fig. II</span>
+          <span class="plate__title">Fugitive Destinations</span>
+          <span class="plate__deskhint">Cover desk · paper-purple anchor</span>
+        </div>
+        <div class="map-wrap">
+          <svg id="map-d2" viewBox="40 30 880 420" preserveAspectRatio="xMidYMid meet" aria-label="Fugitive Destinations — desk-colour anchor"></svg>
+        </div>
+        <div class="key">
+          <span class="key__item"><span class="key__sw key__sw--anchor"></span>United States</span>
+          <span class="key__item"><span class="key__sw key__sw--top"></span>Top destination</span>
+          <span class="key__item"><span class="key__sw key__sw--second"></span>Secondary destination</span>
+          <span class="key__item"><span class="key__sw key__sw--haven"></span>Quiet haven</span>
+          <span class="key__item"><span class="key__sw key__sw--norec"></span>No record</span>
+        </div>
+        <p class="source">Cover desk → anchor adopts paper-purple. No collision (FD doesn't use the EU-bloc class). Across an issue mix, each Cartography piece carries its desk's chromatic moment at the anchor.</p>
+      </figure>
+
+    </div>
+  </section>
+
+  <!-- ============================================================
+       Decision panel
+       ============================================================ -->
+  <aside class="decision">
+    <h3>The three variants — trade-offs</h3>
+    <p><strong>A · Solid on black.</strong> Map reads as a printer's lithograph — black plate, ink colours pop. Strong consistency across desks. The chrome (kicker swatch, masthead, headline marks) retains the desk colour, the chart never does. Photocopy hand is preserved in the chrome but the chart itself is clean.</p>
+    <p><strong>B · Hatched on black.</strong> Same as A but with photocopy-white hatching layered into the colour fills. Keeps the Chalabi/Bickford-Smith hand on the chart, at the cost of a busier read. White-line hatching is a slightly different print idiom (negative-space lithograph) than the original ink-on-paper hatching.</p>
+    <p><strong>C · White plate, ink no-record.</strong> Highest legibility for the coloured tiers — paper colours read truer on white. Anchor uses an inset white halo to stay distinct from the no-record ink countries. <em>But:</em> no-record countries become visually loud (Africa, Russia, Saudi peninsula become large ink masses). For Atlas this is editorially apt — "no treaty = unreachable" is a meaningful negative the reader should feel. For Fugitive Destinations it's noisier — "no record" really means "no data," and the reader's eye is drawn to the absence rather than the colour. So C carries an editorial connotation that A doesn't.</p>
+    <p><strong>Other open questions, all variants.</strong> The stat-strip misregistration still uses <code>--desk</code>, so the chrome retains its desk hue regardless of which variant wins. Tooltip background stays photocopy-white per Dene's call.</p>
+  </aside>
+
+</div>
+
+<script>
+  // ---- Country code sets — extracted from site/src/lib/cartography ----
+
+  // US extradition treaty partners (treaty-data.ts)
+  const US_TREATY = new Set([
+    '008','028','032','036','040','044','052','056','084','068','070','076','100','124','152','170','178','188','191','192',
+    '196','203','208','212','214','218','818','222','233','748','242','246','250','270','276','288','300','308','320','328',
+    '332','340','344','348','352','356','368','372','376','380','388','392','400','404','296','383','428','426','430','438',
+    '440','442','454','458','470','584','480','484','583','492','499','104','520','528','554','558','566','807','578','586',
+    '585','591','598','600','604','608','616','620','642','659','662','670','674','688','690','694','702','703','705','710',
+    '410','724','144','740','752','756','834','764','776','780','792','798','826','858','862','894','716'
+  ]);
+  const US_RELUCTANT = new Set(['192','068','218','818','352','558','586','756','862','716']);
+  const FUGITIVE_HAVENS = new Set([
+    '643','156','364','408','704','398','496','158','784','682','634','414','048','512','887','499','020','028','732','504',
+    '148','140','180','231','262','706','096','116','418','050','524','064','462','004'
+  ]);
+
+  // US fugitive destinations (fugitive-data.ts)
+  const US_TOP_DEST = new Set(['484','124','608','764','188','214','340','084','320','170','218']);
+  const US_SECONDARY_DEST = new Set(['076','032','600','068','604','222','558','360','704','116']);
+  const QUIET_HAVENS = new Set([
+    '643','156','364','408','192','862','112','887','706','729','004','760','422','600'
+  ]);
+
+  const US_ID = '840';
+
+  // Atlas classifier — anchor / haven / reluctant / treaty / no-treaty
+  function classifyAtlas(id) {
+    if (id === US_ID) return 'anchor';
+    if (FUGITIVE_HAVENS.has(id) && (!US_TREATY.has(id) || US_RELUCTANT.has(id))) return 'haven';
+    if (US_RELUCTANT.has(id)) return 'second';
+    if (US_TREATY.has(id)) return 'top';
+    if (FUGITIVE_HAVENS.has(id)) return 'haven';
+    return 'norec';
+  }
+
+  // Fugitive Destinations classifier — anchor / top / secondary / haven / no-record
+  function classifyFugitive(id) {
+    if (id === US_ID) return 'anchor';
+    if (US_TOP_DEST.has(id)) return 'top';
+    if (US_SECONDARY_DEST.has(id)) return 'second';
+    if (QUIET_HAVENS.has(id)) return 'haven';
+    return 'norec';
+  }
+
+  function classToCss(c) {
+    return c === 'norec' ? 'country' : 'country country--' + c;
+  }
+
+  // ---- d3 wiring ----
+  const projection = d3.geoNaturalEarth1().scale(175).translate([480, 270]);
+  const path = d3.geoPath(projection);
+
+  d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then((world) => {
+    const countries = topojson.feature(world, world.objects.countries).features;
+
+    // Base render — countries as fills, no anchor marker
+    const renderInto = (svgId, classifier) => {
+      const svg = d3.select('#' + svgId);
+      const g = svg.append('g').attr('class', 'country-group');
+      g.selectAll('path')
+        .data(countries)
+        .join('path')
+        .attr('d', path)
+        .attr('class', (d) => classToCss(classifier(String(d.id).padStart(3, '0'))))
+        .attr('data-id', (d) => String(d.id).padStart(3, '0'));
+      return { svg, g };
+    };
+
+    // Variants A and B — no anchor marker overlay
+    renderInto('map-a1', classifyAtlas);
+    renderInto('map-a2', classifyFugitive);
+    renderInto('map-b1', classifyAtlas);
+    renderInto('map-b2', classifyFugitive);
+
+    // Variant C-1 · Solid paper-blue anchor — CSS handles fill.
+    // Variant C-2 · Motif-tiled anchor — CSS handles fill via
+    //                                    url(#anchor-motif-tile).
+    // Variant C-3 · Carved-frame anchor — CSS handles fill +
+    //                                     thick photocopy-white stroke.
+    renderInto('map-c1', classifyAtlas);
+    renderInto('map-c2', classifyAtlas);
+    renderInto('map-c3', classifyAtlas);
+
+    // Variant D · anchor = desk colour. Both pieces, current desks.
+    renderInto('map-d1', classifyAtlas);     // Atlas on Data desk
+    renderInto('map-d2', classifyFugitive);  // FD on Cover desk
+  });
+</script>
+
+</body>
+</html>

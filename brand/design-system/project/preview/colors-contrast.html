@@ -1,0 +1,34 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  .card { padding: 28px 32px; }
+  .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+  .cell { aspect-ratio: 3 / 2; padding: 14px 14px 12px; display: flex; flex-direction: column; justify-content: space-between; color: var(--photocopy-black); border: 1.5px solid var(--photocopy-black); }
+  .cell.dark { background: var(--photocopy-black); color: var(--photocopy-white); }
+  .cell h4 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 15px; letter-spacing: -0.01em; line-height: 1.05; }
+  .cell .body { font-family: var(--font-body); font-size: 12px; line-height: 1.4; margin-top: 6px; }
+  .cell .foot { font-family: var(--font-mono); font-size: 10px; opacity: 0.65; letter-spacing: 0.04em; }
+  .c-white { background: var(--photocopy-white); }
+  .c-purple { background: var(--paper-purple); }
+  .c-pink { background: var(--paper-pink); }
+  .c-blue { background: var(--paper-blue); }
+  .c-yellow { background: var(--paper-yellow); }
+  .c-green { background: var(--paper-green); }
+  .c-brown { background: var(--paper-brown); }
+</style></head>
+<body><div class="card">
+  <div class="card__kicker">Contrast — ink on every paper</div>
+  <h2 class="card__title">Black ink reads everywhere.</h2>
+  <p class="card__sub">Body copy at 12:1+ contrast against all six papers. No compromise on readability.</p>
+  <div class="row">
+    <div class="cell c-white"><h4>Photocopy White</h4><div class="body">The median commute fell six minutes.</div><div class="foot">12.8 : 1</div></div>
+    <div class="cell c-purple"><h4>Paper Purple</h4><div class="body">The median commute fell six minutes.</div><div class="foot">10.4 : 1</div></div>
+    <div class="cell c-pink"><h4>Paper Pink</h4><div class="body">The median commute fell six minutes.</div><div class="foot">10.7 : 1</div></div>
+    <div class="cell c-blue"><h4>Paper Blue</h4><div class="body">The median commute fell six minutes.</div><div class="foot">10.8 : 1</div></div>
+    <div class="cell c-yellow"><h4>Paper Yellow</h4><div class="body">The median commute fell six minutes.</div><div class="foot">13.9 : 1</div></div>
+    <div class="cell c-green"><h4>Paper Green</h4><div class="body">The median commute fell six minutes.</div><div class="foot">12.2 : 1</div></div>
+    <div class="cell c-brown"><h4>Paper Brown</h4><div class="body">The median commute fell six minutes.</div><div class="foot">10.2 : 1</div></div>
+    <div class="cell dark"><h4>Reversed</h4><div class="body">Photocopy white on ink for the footer.</div><div class="foot">12.8 : 1</div></div>
+    <div class="cell c-white"><h4 style="opacity:.4">—</h4><div class="body" style="opacity:.4">Never mix two papers on one surface.</div><div class="foot">rule</div></div>
+  </div>
+</div></body></html>

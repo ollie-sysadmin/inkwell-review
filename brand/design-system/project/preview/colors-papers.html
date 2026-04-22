@@ -1,0 +1,31 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  .card { padding: 28px 32px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .sw { aspect-ratio: 1 / 0.9; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; color: var(--photocopy-black); }
+  .sw .nm { font-family: var(--font-display); font-weight: 800; font-size: 15px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .sw .hex { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.04em; opacity: 0.8; }
+  .sw .role { font-family: var(--font-display); font-style: italic; font-size: 12px; opacity: 0.8; }
+  .purple { background: var(--paper-purple); }
+  .pink { background: var(--paper-pink); }
+  .blue { background: var(--paper-blue); }
+  .yellow { background: var(--paper-yellow); }
+  .green { background: var(--paper-green); }
+  .brown { background: var(--paper-brown); }
+  .note { font-family: var(--font-display); font-style: italic; font-size: 14px; margin-top: 16px; opacity: 0.75; max-width: 58ch; }
+</style></head>
+<body><div class="card">
+  <div class="card__kicker">Pastel papers — section stamps</div>
+  <h2 class="card__title">Six papers. One per desk, issue, or mood.</h2>
+  <p class="card__sub">Papers carry hierarchy instead of font size or colour. The ink never changes; the paper behind it does.</p>
+  <div class="grid">
+    <div class="sw purple"><div><div class="nm">Purple</div><div class="role">Lead / cover</div></div><div class="hex">#CDA5EF</div></div>
+    <div class="sw pink"><div><div class="nm">Pink</div><div class="role">Subscribe / voice</div></div><div class="hex">#ECADD4</div></div>
+    <div class="sw blue"><div><div class="nm">Blue</div><div class="role">Charts / data</div></div><div class="hex">#96C7F2</div></div>
+    <div class="sw yellow"><div><div class="nm">Yellow</div><div class="role">Pullquotes / caution</div></div><div class="hex">#ECDD85</div></div>
+    <div class="sw green"><div><div class="nm">Green</div><div class="role">Cities & environment</div></div><div class="hex">#97CF9C</div></div>
+    <div class="sw brown"><div><div class="nm">Brown</div><div class="role">Archive / history</div></div><div class="hex">#DDB896</div></div>
+  </div>
+  <p class="note">Role assignments are guidance, not law. The ink stays #111. Text contrast has been checked against all six papers (all ≥ 12:1).</p>
+</div></body></html>

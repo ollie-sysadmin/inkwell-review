@@ -1,0 +1,113 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  .card { padding: 24px 28px; }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--photocopy-black);
+  }
+  .row:last-child { border-bottom: 0; }
+  .row-k {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    flex-basis: 100%;
+    margin-bottom: 6px;
+  }
+
+  /* Category chip — small swatch + label, the "reader's compass" */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px 6px 8px;
+    border: 1.5px solid var(--photocopy-black);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    background: var(--photocopy-white);
+  }
+  .chip::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    background: var(--sw);
+    border: 1.5px solid var(--photocopy-black);
+  }
+
+  /* Active chip — reverses on paper colour */
+  .chip--active {
+    background: var(--photocopy-black);
+    color: var(--sw);
+  }
+  .chip--active::before { border-color: var(--sw); }
+
+  /* Metadata tag — italic serif, no border */
+  .tag {
+    display: inline-block;
+    font-family: var(--font-wordmark);
+    font-style: italic;
+    font-size: 14px;
+    padding: 2px 0;
+  }
+  .tag::before { content: "— "; }
+
+  /* Issue pill — mono number */
+  .issue {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 4px 10px 5px;
+    background: var(--photocopy-black);
+    color: var(--photocopy-white);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+  .issue strong { font-family: var(--font-display); font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; font-size: 9.5px; }
+</style></head>
+<body><div class="card">
+  <div class="card__kicker">Components · Chips · Category + meta</div>
+  <h3 class="card__title">Swatch, label, issue.</h3>
+  <p class="card__sub">Chips carry the swatch so the paper colour is legible even on photocopy-white.</p>
+
+  <div class="row">
+    <div class="row-k">Category · default</div>
+    <span class="chip" style="--sw: var(--paper-purple)">Cover</span>
+    <span class="chip" style="--sw: var(--paper-blue)">Data</span>
+    <span class="chip" style="--sw: var(--paper-yellow)">Voice</span>
+    <span class="chip" style="--sw: var(--paper-green)">Cities</span>
+    <span class="chip" style="--sw: var(--paper-brown)">Archive</span>
+    <span class="chip" style="--sw: var(--paper-pink)">Interviews</span>
+  </div>
+
+  <div class="row">
+    <div class="row-k">Category · active (filter selected)</div>
+    <span class="chip chip--active" style="--sw: var(--paper-purple)">Cover</span>
+    <span class="chip chip--active" style="--sw: var(--paper-blue)">Data</span>
+    <span class="chip chip--active" style="--sw: var(--paper-yellow)">Voice</span>
+  </div>
+
+  <div class="row">
+    <div class="row-k">Issue pill · always black</div>
+    <span class="issue"><strong>Iss.</strong>034</span>
+    <span class="issue"><strong>Vol.</strong>IV</span>
+    <span class="issue"><strong>Fig.</strong>01</span>
+  </div>
+
+  <div class="row">
+    <div class="row-k">Inline metadata tags · italic serif</div>
+    <span class="tag">9 min read</span>
+    <span class="tag">by Rupa Das</span>
+    <span class="tag">published Tuesday</span>
+    <span class="tag">with corrections</span>
+  </div>
+</div></body></html>

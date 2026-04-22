@@ -1,0 +1,21 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  .card { padding: 28px 32px; }
+  .row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .sw { height: 140px; padding: 14px 16px; display: flex; flex-direction: column; justify-content: flex-end; color: var(--photocopy-black); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.05em; border: 2px solid var(--photocopy-black); }
+  .sw.dark { color: var(--photocopy-white); background: var(--photocopy-black); }
+  .sw .name { font-family: var(--font-display); font-weight: 800; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 2px; }
+  .sw .val { opacity: 0.7; }
+  .note { font-family: var(--font-display); font-style: italic; font-size: 14px; margin-top: 16px; opacity: 0.75; max-width: 56ch; }
+</style></head>
+<body><div class="card">
+  <div class="card__kicker">Photocopy — the two colours that never move</div>
+  <h2 class="card__title">Black on off-white. That's it.</h2>
+  <p class="card__sub">Ink is #111111. Paper is #E1E1E1. No pure white, no pure black — the system lives in photocopy-land.</p>
+  <div class="row">
+    <div class="sw dark"><div class="name">Photocopy Black</div><div class="val">#111111 · OKLCH 0.17 0 0</div></div>
+    <div class="sw"><div class="name">Photocopy White</div><div class="val">#E1E1E1 · OKLCH 0.89 0 0</div></div>
+  </div>
+  <p class="note">All type and linework is Photocopy Black. Paper is either Photocopy White or one of the six pastel sections on the next card.</p>
+</div></body></html>

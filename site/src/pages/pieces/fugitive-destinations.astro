@@ -1,0 +1,86 @@
+---
+import Cartography from '../../templates/Cartography.astro';
+import { ANCHORS, QUIET_HAVENS, COUNTRY_NAMES } from '../../lib/cartography/fugitive-data';
+---
+<Cartography
+  desk="cover"
+  figNumber="II"
+  plateTitle="Fugitive Destinations"
+  kicker="Cover · Cartography · Issue 02"
+  headline="The 14 countries that won't bring anyone home."
+  emphasis={{ type: 'highlight', word: '14 countries' }}
+  standfirst="Mexico for the Americans. The Costa del Sol for the British. And, for everyone else, the small list of refuges that constitutionally refuse to surrender a guest."
+  meta={{
+    author: 'Ollie Inkwell',
+    datePublished: '2026-04-21',
+    displayDate: '21 April 2026',
+    readMinutes: 9,
+    formatLabel: 'Interactive map',
+  }}
+  anchors={ANCHORS}
+  havens={QUIET_HAVENS}
+  countryNames={COUNTRY_NAMES}
+  havensToggleLabel="Highlight quiet havens"
+  mapAriaLabel="World map of fugitive destinations by jurisdiction of origin"
+  legendLabels={{
+    anchor: 'Origin jurisdiction',
+    treaty: 'Top destination',
+    reluctant: 'Secondary destination',
+    haven: 'Quiet haven',
+    noTreaty: 'No record',
+  }}
+  legendReferents={{
+    anchor: 'Where the fugitive is wanted from.',
+    treaty: 'Highest capture frequency or strongest documented pattern.',
+    reluctant: 'Recurring destination, lower frequency.',
+    haven: 'Reputational refuge: poor extradition cooperation, often by design.',
+    noTreaty: 'Not flagged as a destination in the public capture record.',
+  }}
+  statLabels={{
+    anchor: { label: 'Origin' },
+    partners: { label: 'Top destinations', unit: 'countries', note: 'highest capture frequency' },
+    reluctant: { label: 'Secondary', unit: 'countries', note: 'recurring but less frequent' },
+    noTreaty: { label: 'No record', unit: 'countries', note: 'not flagged in the public capture data' },
+  }}
+  tooltipNotes={{
+    haven: 'Reputational fugitive refuge — typically no extradition treaty with Western states, a constitutional bar on surrendering nationals, or political non-cooperation by design.',
+    reluctant: 'Recurring as a destination in capture records or reporting, at lower frequency than the top tier.',
+    treaty: 'Top destination — highest capture frequency or strongest documented pattern.',
+    noTreatyHaven: 'Not flagged as a destination in the public capture record.',
+    noTreaty: 'Not flagged as a destination in the public capture record.',
+  }}
+  sourceLine="Sources: US Marshals Service annual reports on foreign-fugitive captures; FBI Most Wanted capture announcements 2014–2024; UK NCA Most Wanted captures; Europol's Europe's Most Wanted; reporting in The Guardian (Costa del Crime), Reuters, NYT, BBC, ProPublica, ICIJ. Tiers reflect frequency of capture or documented sightings in the public record, not total fugitive populations (which are by definition unknown). Illustration, not enforcement intelligence."
+>
+  <!-- Per-piece stamp: a tilted ink passport stamp.
+       Social-card version lives in src/pieces/fugitive-destinations.ts (stampSvg). -->
+  <svg slot="stamp" viewBox="0 0 30 22" aria-hidden="true">
+    <g transform="rotate(-4 15 11)" stroke="#111111" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="3" width="26" height="16"/>
+      <line x1="5.5" y1="8.5" x2="13.5" y2="8.5"/>
+      <line x1="5.5" y1="13.5" x2="11.5" y2="13.5"/>
+      <path d="M17.5 11 L25 11 M22 8.5 L25 11 L22 13.5"/>
+    </g>
+  </svg>
+
+  <!-- Short plate-intro prose — sits in the right gutter beside the map. -->
+  <Fragment slot="plate-intro">
+    <p>A fugitive's geography is shaped by three things: how far you can drive, who refuses to extradite, and where the money already is. The pattern is sharper than the headlines suggest.</p>
+    <p>For US fugitives, <strong>Mexico</strong> dominates by an order of magnitude. For UK fugitives, the sun-warmed strip from <strong>Marbella</strong> to <strong>Paphos</strong> still does most of the work, half a century after the Costa del Sol earned its nickname.</p>
+  </Fragment>
+
+  <!-- Long prose body (default slot) — 300–500 word SEO section. -->
+  <h2>Proximity wins</h2>
+  <p>
+    Geography sets the rule. American fugitives go south because south is close, the road keeps going, and the border crossings still favour the determined over the documented. British fugitives went south too, in their own way: by package flight to the Costa del Sol, where for forty years <em>gone to Spain</em> meant something specific. Both flight maps look like the destinations people knew before they had to use them.
+  </p>
+
+  <h2>The three corners of refuge</h2>
+  <p>
+    Past the easy distances, three categories carry the rest. The first is countries that constitutionally refuse to surrender their own citizens — Brazil, Argentina, Russia, China — making naturalisation the lawyer's last move. The second is countries with selective extradition cooperation in practice: the UAE, Egypt, Lebanon, Türkiye. The third is the small, hard list — Iran, North Korea, Belarus, Cuba, Venezuela, a handful more — where treaty absence and political alignment make recovery unlikely by design. Toggle the quiet-havens layer to see them isolated.
+  </p>
+
+  <h2>What the map can't show</h2>
+  <p>
+    Three things this map omits. Caught fugitives are not the same as fugitives at large; capture data is downstream of where local authorities cooperate, which means the most successful refuges are also the ones least visible in the numbers. Financial fugitives — the kind who matter most to investors and tax authorities — surface differently from violent ones, and concentrate in the Gulf and the South Pacific. And a haven works only if you arrive solvent. <em>— Ollie</em>
+  </p>
+</Cartography>

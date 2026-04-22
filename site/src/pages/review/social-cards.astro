@@ -1,0 +1,329 @@
+---
+/**
+ * /review/social-cards — a one-page holding view of every
+ * 4:5 social card for every piece. Each card renders through its
+ * live dynamic route (/pieces/[slug]/social/[index]) in an iframe,
+ * scaled down so the whole carousel fits on the page for scan review.
+ *
+ * Noindex — internal editorial review only.
+ */
+import '../../styles/global.css';
+import type { SocialCardProps } from '../../components/SocialCard4x5.types';
+
+interface PieceCardsModule {
+  socialCards?: SocialCardProps[];
+}
+
+const modules = import.meta.glob<PieceCardsModule>('../../pieces/*.ts', { eager: true });
+
+interface PieceGroup {
+  slug: string;
+  label: string;
+  cards: Array<{ index: number; short: string; headline: string; emphasisType?: string }>;
+}
+
+const groups: PieceGroup[] = [];
+for (const [filepath, mod] of Object.entries(modules)) {
+  const match = filepath.match(/\/([^/]+)\.ts$/);
+  if (!match) continue;
+  const slug = match[1];
+  const cards = mod.socialCards;
+  if (!Array.isArray(cards) || cards.length === 0) continue;
+  groups.push({
+    slug,
+    label: slug
+      .split('-')
+      .map((w) => w[0].toUpperCase() + w.slice(1))
+      .join(' '),
+    cards: cards.map((c, i) => ({
+      index: i,
+      short: c.anchor?.short ?? String(i),
+      headline: c.headline,
+      emphasisType: c.emphasis?.type,
+    })),
+  });
+}
+groups.sort((a, b) => a.slug.localeCompare(b.slug));
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Inkwell — social-card review</title>
+  </head>
+  <body class="review">
+
+    <header class="rev-head">
+      <div>
+        <span class="wm">Inkwell <em>Review</em></span>
+        <span class="slash">/</span>
+        <span class="tag">Social-card review</span>
+      </div>
+      <p class="note">
+        Every 4:5 card, all pieces, one page. Each tile is a live iframe of
+        <code>/pieces/[slug]/social/[index]</code>. Edit the headlines,
+        emphasis, and footer stats in
+        <code>site/src/pieces/&lt;slug&gt;.ts</code> — the tile updates on save.
+      </p>
+    </header>
+
+    {groups.map((group) => (
+      <section class="rev-group">
+        <h2 class="rev-group__title">
+          {group.label}
+          <span class="rev-group__count">{group.cards.length} cards</span>
+        </h2>
+
+        <div class="rev-grid">
+          {group.cards.map((card) => (
+            <figure class="rev-tile">
+              <figcaption class="rev-tile__cap">
+                <span class="rev-tile__idx">#{card.index}</span>
+                <span class="rev-tile__short">{card.short}</span>
+                <span class={`rev-tile__emph rev-tile__emph--${card.emphasisType ?? 'none'}`}>
+                  {card.emphasisType ?? 'none'}
+                </span>
+                <a
+                  class="rev-tile__link"
+                  href={`/pieces/${group.slug}/social/${card.index}`}
+                  target="_blank"
+                  rel="noopener"
+                >open ↗</a>
+              </figcaption>
+              <div class="rev-tile__frame-wrap">
+                <iframe
+                  class="rev-tile__frame"
+                  src={`/pieces/${group.slug}/social/${card.index}`}
+                  loading="lazy"
+                  title={`${group.label} · ${card.short} · card ${card.index}`}
+                ></iframe>
+              </div>
+              <p class="rev-tile__headline">{card.headline}</p>
+            </figure>
+          ))}
+        </div>
+      </section>
+    ))}
+
+    <footer class="rev-foot">
+      <p>
+        Source of truth:
+        <code>site/src/pieces/extradition-atlas.ts</code> (8 cards),
+        <code>site/src/pieces/fugitive-destinations.ts</code> (3 cards).
+      </p>
+    </footer>
+
+    <style is:global>
+      body.review {
+        background: #2a2a2a;
+        color: #e1e1e1;
+        font-family: var(--font-body);
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+      }
+
+      .rev-head {
+        padding: 40px 48px 28px;
+        border-bottom: 1.5px solid #444;
+      }
+      .rev-head .wm {
+        font-family: var(--font-wordmark);
+        font-size: 28px;
+        color: #e1e1e1;
+        letter-spacing: -0.02em;
+      }
+      .rev-head .wm em {
+        font-style: italic;
+        margin-left: 0.18em;
+      }
+      .rev-head .slash {
+        color: #666;
+        margin: 0 10px;
+        font-size: 22px;
+      }
+      .rev-head .tag {
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: #aaa;
+      }
+      .rev-head .note {
+        margin: 16px 0 0;
+        font-size: 14px;
+        line-height: 1.5;
+        color: #aaa;
+        max-width: 72ch;
+      }
+      .rev-head code {
+        background: #1a1a1a;
+        padding: 2px 6px;
+        border: 1px solid #444;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        color: #ddd;
+      }
+
+      .rev-group {
+        padding: 32px 48px 24px;
+      }
+      .rev-group__title {
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: 14px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: #ddd;
+        margin: 0 0 18px;
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+      }
+      .rev-group__count {
+        font-family: var(--font-wordmark);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 16px;
+        letter-spacing: 0;
+        text-transform: none;
+        color: #888;
+      }
+
+      /* 4-up grid on wide screens, collapses down for narrower viewports. */
+      .rev-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 28px;
+      }
+
+      .rev-tile {
+        margin: 0;
+        background: #1c1c1c;
+        border: 1px solid #3a3a3a;
+        padding: 14px 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .rev-tile__cap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: 10px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+      }
+      .rev-tile__idx {
+        color: #777;
+      }
+      .rev-tile__short {
+        background: #ddd;
+        color: #111;
+        padding: 2px 8px;
+      }
+      .rev-tile__emph {
+        padding: 2px 8px;
+        border: 1px solid #555;
+        color: #aaa;
+      }
+      .rev-tile__emph--highlight {
+        background: #e1e1e1;
+        color: #111;
+        border-color: #e1e1e1;
+      }
+      .rev-tile__emph--circled {
+        border-radius: 999px;
+        border-color: #ddd;
+        color: #ddd;
+      }
+      .rev-tile__link {
+        margin-left: auto;
+        color: #9ccfff;
+        text-decoration: none;
+        font-size: 10px;
+        letter-spacing: 0.18em;
+      }
+      .rev-tile__link:hover {
+        color: #fff;
+      }
+
+      .rev-tile__frame-wrap {
+        position: relative;
+        width: 100%;
+        /* 4:5 portrait, but inside an iframe that's scaled so the whole
+           1080×1350 card fits. We use aspect-ratio on the wrapper, then
+           force the iframe to render at card width and use transform to
+           scale to the visible size. */
+        aspect-ratio: 4 / 5;
+        overflow: hidden;
+        background: #000;
+        border: 1px solid #555;
+      }
+      .rev-tile__frame {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1160px;   /* 1080 card + 40+40 card-page padding */
+        height: 1450px;  /* 1350 card + 40+40 card-page padding */
+        border: 0;
+        transform-origin: top left;
+        /* Actual CSS scale is applied via JS below because aspect-ratio
+           + auto-fill grid means the tile width isn't known at SSR. */
+      }
+
+      .rev-tile__headline {
+        font-family: var(--font-body);
+        font-size: 13px;
+        line-height: 1.45;
+        color: #ccc;
+        margin: 0;
+        min-height: 3em;
+      }
+
+      .rev-foot {
+        padding: 24px 48px 60px;
+        border-top: 1.5px solid #444;
+        margin-top: 32px;
+        font-size: 13px;
+        color: #888;
+      }
+      .rev-foot code {
+        background: #1a1a1a;
+        padding: 2px 6px;
+        border: 1px solid #444;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        color: #ddd;
+      }
+    </style>
+
+    <script is:inline>
+      // Scale each iframe to fit its wrapper. Re-run on resize so the
+      // grid (which uses auto-fill) stays crisp as the window changes.
+      function scaleTiles() {
+        document.querySelectorAll('.rev-tile__frame-wrap').forEach((wrap) => {
+          const frame = wrap.querySelector('.rev-tile__frame');
+          if (!frame) return;
+          const w = wrap.clientWidth;
+          const scale = w / 1160;
+          frame.style.transform = `scale(${scale})`;
+        });
+      }
+      scaleTiles();
+      window.addEventListener('resize', scaleTiles);
+      // Re-scale again after frames load (some browsers lay out slightly
+      // differently once content appears).
+      document.querySelectorAll('.rev-tile__frame').forEach((f) => {
+        f.addEventListener('load', scaleTiles, { once: true });
+      });
+    </script>
+
+  </body>
+</html>

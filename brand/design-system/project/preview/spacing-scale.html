@@ -1,0 +1,30 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  .card { padding: 28px 32px; }
+  .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; align-items: end; }
+  .box { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+  .sq { background: var(--photocopy-black); }
+  .lbl { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.7; }
+  hr.rule { border: 0; border-top: 1px solid var(--photocopy-black); margin: 18px 0 10px; }
+  hr.strong { border: 0; border-top: 2px solid var(--photocopy-black); margin: 12px 0; }
+  hr.thick { border: 0; border-top: 4px solid var(--photocopy-black); margin: 12px 0; }
+  hr.double { border: 0; border-top: 6px double var(--photocopy-black); margin: 12px 0; }
+  .rl { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.06em; opacity: 0.6; margin-left: 4px; }
+</style></head>
+<body><div class="card">
+  <div class="card__kicker">Spacing — 4px base grid</div>
+  <div class="grid">
+    <div class="box"><div class="sq" style="width:4px;height:4px"></div><div class="lbl">S-1 · 4</div></div>
+    <div class="box"><div class="sq" style="width:8px;height:8px"></div><div class="lbl">S-2 · 8</div></div>
+    <div class="box"><div class="sq" style="width:16px;height:16px"></div><div class="lbl">S-4 · 16</div></div>
+    <div class="box"><div class="sq" style="width:24px;height:24px"></div><div class="lbl">S-5 · 24</div></div>
+    <div class="box"><div class="sq" style="width:32px;height:32px"></div><div class="lbl">S-6 · 32</div></div>
+    <div class="box"><div class="sq" style="width:48px;height:48px"></div><div class="lbl">S-7 · 48</div></div>
+  </div>
+  <div class="card__kicker" style="margin-top:28px">Rules</div>
+  <hr class="rule"><div class="rl">1 px — byline, masthead rail</div>
+  <hr class="strong"><div class="rl">2 px — section kicker top</div>
+  <hr class="thick"><div class="rl">4 px — chart & pullquote frames</div>
+  <hr class="double"><div class="rl">6 px — masthead, footer, major sections</div>
+</div></body></html>

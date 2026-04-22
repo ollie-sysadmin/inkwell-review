@@ -1,0 +1,308 @@
+/* Remote fonts must come before @import "tailwindcss" (which expands inline)
+   and before any @font-face blocks. */
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+@import "tailwindcss";
+
+/* =========================================================
+   Inkwell Review — global styles
+   Ported from brand/design-system/project/colors_and_type.css
+   (tokens + type semantics) and the homepage mockup system
+   patterns (speckle, wobble rules, ink-jitter).
+
+   Layer order:
+   1. @font-face — local Atkinson
+   2. :root tokens — colours, type, spacing, radii
+   3. System patterns — speckle, wobble rules, ink-jitter
+   4. Base type — html/body, h1-h3, body, meta, highlight, etc.
+   5. Rules + utility helpers
+   ========================================================= */
+
+/* ---- Atkinson Hyperlegible Soft (local) ---- */
+@font-face {font-family:"Atkinson Hyperlegible Soft";font-style:normal;font-weight:200;font-display:swap;src:url("/fonts/AtkinsonHyperlegibleSoft-ExtraLight.woff2") format("woff2");}
+@font-face {font-family:"Atkinson Hyperlegible Soft";font-style:italic;font-weight:200;font-display:swap;src:url("/fonts/AtkinsonHyperlegibleSoft-ExtraLightItalic.woff2") format("woff2");}
+@font-face {font-family:"Atkinson Hyperlegible Soft";font-style:normal;font-weight:300;font-display:swap;src:url("/fonts/AtkinsonHyperlegibleSoft-Light.woff2") format("woff2");}
+@font-face {font-family:"Atkinson Hyperlegible Soft";font-style:italic;font-weight:300;font-display:swap;src:url("/fonts/AtkinsonHyperlegibleSoft-LightItalic.woff2") format("woff2");}
+@font-face {font-family:"Atkinson Hyperlegible Soft";font-style:normal;font-weight:400;font-display:swap;src:url("/fonts/AtkinsonHyperlegibleSoft-Regular.woff2") format("woff2");}
+@font-face {font-family:"Atkinson Hyperlegible Soft";font-style:italic;font-weight:400;font-display:swap;src:url("/fonts/AtkinsonHyperlegibleSoft-RegularItalic.woff2") format("woff2");}
+@font-face {font-family:"Atkinson Hyperlegible Soft";font-style:normal;font-weight:500;font-display:swap;src:url("/fonts/AtkinsonHyperlegibleSoft-Medium.woff2") format("woff2");}
+@font-face {font-family:"Atkinson Hyperlegible Soft";font-style:italic;font-weight:500;font-display:swap;src:url("/fonts/AtkinsonHyperlegibleSoft-MediumItalic.woff2") format("woff2");}
+@font-face {font-family:"Atkinson Hyperlegible Soft";font-style:normal;font-weight:600;font-display:swap;src:url("/fonts/AtkinsonHyperlegibleSoft-SemiBold.woff2") format("woff2");}
+@font-face {font-family:"Atkinson Hyperlegible Soft";font-style:italic;font-weight:600;font-display:swap;src:url("/fonts/AtkinsonHyperlegibleSoft-SemiBoldItalic.woff2") format("woff2");}
+@font-face {font-family:"Atkinson Hyperlegible Soft";font-style:normal;font-weight:700;font-display:swap;src:url("/fonts/AtkinsonHyperlegibleSoft-Bold.woff2") format("woff2");}
+@font-face {font-family:"Atkinson Hyperlegible Soft";font-style:italic;font-weight:700;font-display:swap;src:url("/fonts/AtkinsonHyperlegibleSoft-BoldItalic.woff2") format("woff2");}
+@font-face {font-family:"Atkinson Hyperlegible Soft";font-style:normal;font-weight:800;font-display:swap;src:url("/fonts/AtkinsonHyperlegibleSoft-ExtraBold.woff2") format("woff2");}
+@font-face {font-family:"Atkinson Hyperlegible Soft";font-style:italic;font-weight:800;font-display:swap;src:url("/fonts/AtkinsonHyperlegibleSoft-ExtraBoldItalic.woff2") format("woff2");}
+
+:root {
+  /* ---- PHOTOCOPY CORE — the two colours that never move ---- */
+  --photocopy-black: #111111;
+  --photocopy-white: #E1E1E1;
+
+  /* ---- PASTEL PALETTE — each is a single slug-page background ---- */
+  --paper-purple: #CDA5EF;
+  --paper-pink:   #ECADD4;
+  --paper-blue:   #96C7F2;
+  --paper-yellow: #ECDD85;
+  --paper-green:  #97CF9C;
+  --paper-brown:  #DDB896;
+
+  /* ---- CATEGORY MAPPING — locked ---- */
+  --cat-cover:      var(--paper-purple);
+  --cat-data:       var(--paper-blue);
+  --cat-voice:      var(--paper-yellow);
+  --cat-cities:     var(--paper-green);
+  --cat-archive:    var(--paper-brown);
+  --cat-interviews: var(--paper-pink);
+
+  /* ---- SITE ACCENT — purple, sparing, on photocopy-grey surfaces ---- */
+  --accent: var(--paper-purple);
+
+  /* ---- DESK ACCENT — the current page's "colour moment".
+         Used by masthead/footer text, kicker swatches, chart cards.
+         Defaults to purple on home/index surfaces; overridden per
+         desk by the .cat-* classes below. ---- */
+  --desk: var(--paper-purple);
+
+  /* ---- DEFAULTS (home page) ---- */
+  --bg:            var(--photocopy-white);
+  --fg:            var(--photocopy-black);
+  --fg-muted:      #1111119a;
+  --fg-subtle:     #11111166;
+  --border:        #11111122;
+  --border-strong: #111111;
+  --rule:          #11111133;
+
+  /* ---- TYPE ---- */
+  --font-display:  "Atkinson Hyperlegible Soft", "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;
+  --font-body:     "Atkinson Hyperlegible Soft", "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:     "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-wordmark: "DM Serif Display", "Times New Roman", Georgia, serif;
+
+  --fs-xs:   0.78rem;
+  --fs-sm:   0.9rem;
+  --fs-base: 1.05rem;
+  --fs-lg:   1.25rem;
+  --fs-xl:   1.75rem;
+  --fs-2xl:  2.5rem;
+  --fs-3xl:  3.75rem;
+  --fs-4xl:  5.5rem;
+  --fs-5xl:  8rem;
+
+  --lh-tight: 1.02;
+  --lh-snug:  1.15;
+  --lh-body:  1.55;
+
+  --tracking-display: -0.01em;
+  --tracking-caps:    0.1em;
+
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px;
+  --s-5:24px; --s-6:32px; --s-7:48px; --s-8:64px; --s-9:96px;
+
+  --r-0: 0;
+  --r-2: 2px;
+  --r-4: 4px;
+  --r-full: 999px;
+
+  --measure-body: 34rem;
+
+  /* ---- HAND-STAMPED WOBBLE RULES (three weights) ----
+     SVG backgrounds used by .rule-wobble-* classes. Wide tile +
+     low-amplitude curve reads as hand-stamped, not doodled. */
+  --rule-wobble:        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 6' preserveAspectRatio='none'><path d='M0 3.2 Q 75 1.8 150 3.2 T 300 3.2 T 450 3.2 T 600 3.2' stroke='%23111111' stroke-width='1.6' fill='none' stroke-linecap='round'/></svg>");
+  --rule-wobble-heavy:  url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 6' preserveAspectRatio='none'><path d='M0 3 Q 75 1.4 150 3 T 300 3 T 450 3 T 600 3' stroke='%23111111' stroke-width='2.4' fill='none' stroke-linecap='round'/></svg>");
+  --rule-wobble-double: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 12' preserveAspectRatio='none'><path d='M0 3 Q 75 1.6 150 3 T 300 3 T 450 3 T 600 3' stroke='%23111111' stroke-width='1.4' fill='none' stroke-linecap='round'/><path d='M0 9 Q 75 10.6 150 9 T 300 9 T 450 9 T 600 9' stroke='%23111111' stroke-width='1.4' fill='none' stroke-linecap='round'/></svg>");
+}
+
+/* =========================================================
+   CATEGORY DESK ACCENT — sets the --desk token per page.
+   Body stays photocopy-white across the site; the desk colour
+   shows up on masthead/footer text, kicker swatches, and chart
+   cards. (Updated 20 April 2026 — supersedes the earlier
+   wall-to-wall-pastel rule; see decisions-log.)
+   ========================================================= */
+.cat-cover      { --desk: var(--cat-cover); }
+.cat-data       { --desk: var(--cat-data); }
+.cat-voice      { --desk: var(--cat-voice); }
+.cat-cities     { --desk: var(--cat-cities); }
+.cat-archive    { --desk: var(--cat-archive); }
+.cat-interviews { --desk: var(--cat-interviews); }
+.home           { --desk: var(--paper-purple); }
+
+/* =========================================================
+   HTML / BODY BASE
+   ========================================================= */
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+}
+body { overflow-x: hidden; }
+
+/* =========================================================
+   SPECKLE — two SVG tiles (dark on light, light on ink).
+   Fixed overlays so a scroll feels printed, not digital.
+   ========================================================= */
+body::before {
+  content: "";
+  position: fixed; inset: 0; pointer-events: none; z-index: 200;
+  background-image: url("/assets/speckle-dark.svg");
+  background-repeat: repeat;
+  opacity: 0.85;
+  mix-blend-mode: multiply;
+}
+body::after {
+  content: "";
+  position: fixed; inset: 0; pointer-events: none; z-index: 201;
+  background-image: url("/assets/speckle-light.svg");
+  background-repeat: repeat;
+  opacity: 0.65;
+  mix-blend-mode: screen;
+}
+
+/* =========================================================
+   WOBBLE RULE UTILITIES — hand-stamped divider patterns.
+   ========================================================= */
+.rule-wobble-bottom { position: relative; }
+.rule-wobble-bottom::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+  height: 6px; background: var(--rule-wobble) repeat-x bottom; background-size: 600px 6px;
+  pointer-events: none;
+}
+.rule-wobble-bottom--heavy::after { background-image: var(--rule-wobble-heavy); }
+.rule-wobble-bottom--double::after { height: 12px; background-image: var(--rule-wobble-double); background-size: 600px 12px; }
+
+.rule-wobble-top { position: relative; }
+.rule-wobble-top::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0;
+  height: 6px; background: var(--rule-wobble-heavy) repeat-x top; background-size: 600px 6px;
+  pointer-events: none;
+}
+
+/* Ink-jitter filter target — filter <defs> lives in BaseLayout */
+.hl { filter: url(#ink-jitter); }
+
+/* =========================================================
+   TYPE SEMANTICS
+   ========================================================= */
+.t-wordmark {
+  font-family: var(--font-wordmark);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 0.86;
+}
+.t-wordmark--giant {
+  font-family: var(--font-wordmark);
+  font-weight: 400;
+  font-size: clamp(6rem, 22vw, 22rem);
+  line-height: 0.82;
+  letter-spacing: -0.02em;
+  color: var(--bg);
+}
+
+.t-display, h1, .t-h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--fs-3xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-display);
+  color: var(--fg);
+  margin: 0;
+}
+h2, .t-h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tracking-display);
+  color: var(--fg);
+  margin: 0;
+}
+h3, .t-h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-xl);
+  line-height: var(--lh-snug);
+  color: var(--fg);
+  margin: 0;
+}
+
+.t-standfirst {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: var(--fs-lg);
+  line-height: var(--lh-body);
+  color: var(--fg);
+}
+p, .t-body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
+  color: var(--fg);
+}
+.t-meta, .t-kicker {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+.t-num, code {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+.t-num-big {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--fs-3xl);
+  line-height: 0.9;
+  letter-spacing: var(--tracking-display);
+  font-variant-numeric: tabular-nums;
+}
+.t-caption, figcaption {
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  font-style: italic;
+  color: var(--fg-muted);
+}
+
+/* =========================================================
+   NAMESAKE MOVES — signature typographic techniques
+   ========================================================= */
+.t-highlight {
+  background: var(--photocopy-black);
+  color: var(--bg);
+  padding: 0.02em 0.25em 0.08em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.t-circled {
+  position: relative;
+  display: inline-block;
+  padding: 0 0.28em;
+  z-index: 0;
+}
+.t-circled::before {
+  content: "";
+  position: absolute;
+  inset: -0.14em -0.1em -0.12em -0.1em;
+  border: 2.5px solid var(--photocopy-black);
+  border-radius: 50%;
+  transform: rotate(-2.5deg);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* =========================================================
+   RULES
+   ========================================================= */
+.rule-hair   { border:0; border-top: 1px solid var(--border); }
+.rule-strong { border:0; border-top: 2px solid var(--photocopy-black); }
+.rule-thick  { border:0; border-top: 4px solid var(--photocopy-black); }
+.rule-double { border:0; border-top: 6px double var(--photocopy-black); }

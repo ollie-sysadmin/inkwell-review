@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inkwell Review — masthead tray subtle</title>
+<link rel="stylesheet" href="../design-system/project/colors_and_type.css">
+<style>
+  html, body { margin: 0; padding: 0; background: var(--photocopy-white); color: var(--photocopy-black); }
+
+  /* speckle */
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 200;
+    background: url("../assets/speckle-dark.svg") repeat;
+    opacity: 0.85; mix-blend-mode: multiply;
+  }
+  body::after {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 201;
+    background: url("../assets/speckle-light.svg") repeat;
+    opacity: 0.65; mix-blend-mode: screen;
+  }
+
+  .label {
+    max-width: 1180px; margin: 56px auto 14px; padding: 0 40px;
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 14px; letter-spacing: 0.18em; text-transform: uppercase;
+  }
+  .label em {
+    display: block; margin-top: 6px;
+    font-family: var(--font-body); font-style: italic; font-weight: 400;
+    font-size: 14px; letter-spacing: 0; text-transform: none;
+    color: #555;
+  }
+
+  /* masthead base */
+  .mast {
+    background: var(--photocopy-black);
+    color: var(--paper-purple);
+    border-bottom: 6px double var(--paper-purple);
+    position: relative; z-index: 1;
+  }
+  .mast__inner { max-width: 1180px; margin: 0 auto; padding: 28px 40px 32px; }
+  .mast__main {
+    display: grid; grid-template-columns: 1fr auto;
+    gap: 40px; align-items: center;
+  }
+  .mast__wm {
+    font-family: var(--font-wordmark); font-weight: 400;
+    font-size: clamp(72px, 11vw, 140px);
+    line-height: 0.82; letter-spacing: -0.02em;
+    color: var(--paper-purple); text-decoration: none;
+  }
+  .mast__wm em { font-style: italic; }
+  .mast__right {
+    display: flex; flex-direction: column; align-items: flex-end; gap: 14px;
+    width: clamp(420px, 38vw, 540px);
+  }
+  .mast__editor {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--paper-purple); opacity: 0.92; text-align: right;
+  }
+  .mast__cluster {
+    display: block; height: 100px; width: auto; max-width: 100%;
+    opacity: 0.5;
+    align-self: flex-end;
+  }
+  .mast__nav { display: flex; gap: 4px; }
+  .mast__nav a {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--paper-purple); text-decoration: none;
+    padding: 7px 14px 8px;
+    border: 1.5px solid transparent;
+  }
+  .mast__nav a.is-active {
+    background: var(--paper-purple); color: var(--photocopy-black);
+    border-color: var(--paper-purple);
+  }
+  .mast__tag {
+    margin-top: 22px; padding-top: 14px;
+    border-top: 1.5px solid var(--paper-purple);
+    font-family: var(--font-wordmark); font-style: italic;
+    font-size: 15px; color: var(--paper-purple);
+  }
+</style>
+</head>
+<body>
+
+<div class="label">Subtle — cluster contained, 100 px tall, 50 % opacity
+  <em>Right-aligned ribbon between the caps line and nav. Sits behind the architecture; doesn't fight it.</em>
+</div>
+
+<header class="mast">
+  <div class="mast__inner">
+    <div class="mast__main">
+      <a href="#" class="mast__wm" aria-label="Inkwell Review — home">Inkwell<br><em>Review</em></a>
+      <div class="mast__right">
+        <div class="mast__editor">Vol. I · No. III · Edited by Ollie · Twice weekly</div>
+        <img class="mast__cluster" src="../assets/masthead-tray-cluster.png" alt="" aria-hidden="true">
+        <nav class="mast__nav">
+          <a href="#" class="is-active">Latest</a>
+          <a href="#">Archive</a>
+          <a href="#">Subscribe</a>
+        </nav>
+      </div>
+    </div>
+    <div class="mast__tag">Statistical peculiarities of human behaviour.</div>
+  </div>
+</header>
+
+</body>
+</html>

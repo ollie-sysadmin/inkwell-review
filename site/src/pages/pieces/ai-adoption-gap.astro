@@ -1,0 +1,98 @@
+---
+import Cartography from '../../templates/Cartography.astro';
+import {
+  ANCHORS,
+  COUNTRY_NAMES,
+} from '../../lib/cartography/ai-diffusion-data';
+---
+<Cartography
+  desk="data"
+  figNumber="III"
+  plateTitle="AI adoption by country — anchored on the United States"
+  kicker="Data · Cartography · Issue 03"
+  headline="The United States makes the models. It ranks 24th at using them."
+  emphasis={{ type: 'highlight', word: '24th' }}
+  standfirst="Microsoft's global AI diffusion survey puts the United Arab Emirates at 64%, Singapore at 61%, France at 44%, and the United States at 28.3% — behind twenty-three other economies. Select a country to see where it sits."
+  meta={{
+    author: 'Ollie Inkwell',
+    datePublished: '2026-04-21',
+    displayDate: '21 April 2026',
+    readMinutes: 7,
+    formatLabel: 'Interactive map',
+  }}
+  anchors={ANCHORS}
+  havens={new Set<string>()}
+  euMembers={new Set<string>()}
+  countryNames={COUNTRY_NAMES}
+  havensToggleLabel="Highlight countries ahead of the US"
+  mapAriaLabel="World map of generative AI adoption rates, second half of 2025"
+  legendLabels={{
+    anchor: 'Anchor',
+    treaty: 'Leaders',
+    reluctant: 'Strong',
+    suspended: 'Middle (US tier)',
+    haven: '',
+    noTreaty: 'Outside measured top 30',
+  }}
+  legendReferents={{
+    anchor: 'The country this view is built around.',
+    treaty: '40% and above. UAE, Singapore, Norway, Ireland, France, Spain, New Zealand.',
+    reluctant: '30–39.9%. Most of North-Western Europe and the UK, plus Qatar, Israel, Australia, Canada, South Korea.',
+    suspended: '25–29.9%. Twelve economies, including the United States.',
+    haven: '',
+    noTreaty: 'Countries outside the 30 economies with published Microsoft estimates for 2025.',
+  }}
+  statLabels={{
+    anchor: { label: 'Anchor' },
+    partners: { label: 'Leaders', unit: 'countries', note: '40%+ adoption' },
+    reluctant: { label: 'Strong', unit: 'countries', note: '30 – 39%' },
+    noTreaty: { label: 'Outside top 30', unit: 'countries', note: 'no published 2025 value' },
+  }}
+  tooltipNotes={{
+    treaty: '40% adoption or higher — the global leaders.',
+    reluctant: '30 – 39% adoption — strong daily use.',
+    suspended: '25 – 29.9% adoption — the tier the US sits in.',
+    noTreaty: 'No published 2025 value in the Microsoft AI Economy Institute dataset.',
+  }}
+  sourceLine="Source: Microsoft AI Economy Institute 2025, via Stanford University AI Index 2026 Report (Chapter 4 — Economy, Figure 4.3.12, p. 201). Definition: survey-based estimate of the share of the adult population using generative AI in the second half of 2025. Methodology per Misra et al. 2025. Countries outside the top 30 are rendered as no-data, not zero — the underlying dataset covers a wider set, but only the top 30 have publicly published percentages."
+>
+  <!-- Per-piece stamp: a pencil-circle bullseye — the mark an editor puts next
+       to the anomaly in a ranking table. One mark per piece, Bickford-Smith's
+       move. The social-card version lives in src/pieces/ai-adoption-gap.ts. -->
+  <svg slot="stamp" viewBox="0 0 30 22" aria-hidden="true">
+    <g stroke="#111111" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="15" cy="11" r="8.2" stroke-width="1.6" transform="rotate(-6 15 11)"/>
+      <circle cx="15" cy="11" r="4.2" stroke-width="1.4" transform="rotate(4 15 11)"/>
+      <circle cx="15" cy="11" r="1.2" stroke-width="1.4" fill="#111111"/>
+    </g>
+  </svg>
+
+  <!-- Short plate-intro prose — sits in the right gutter beside the map. -->
+  <Fragment slot="plate-intro">
+    <p>Generative AI reached 53% of the world inside three years — faster than the personal computer or the internet. But use is not evenly distributed. Microsoft's survey of the top 30 economies finds a ceiling-to-floor spread of almost forty points, and the country that makes most of the tools is not the country that uses them.</p>
+    <p>The United States sits <strong>24th</strong> at <strong>28.3%</strong>. The United Arab Emirates sits first at <strong>64%</strong>.</p>
+  </Fragment>
+
+  <!-- Long prose body (default slot) — 300–500 word SEO section. -->
+  <h2>What a supply-side leader looks like from the demand side</h2>
+  <p>
+    In 2025 the United States committed more than twenty-three times as much private capital to AI as China did. American firms produce almost all of the leading frontier models. The industry's data centres, compute spend, and talent concentration all cluster on US soil. On every supply-side metric the AI Index tracks, the United States dominates.
+  </p>
+  <p>
+    It also ranks twenty-fourth in adoption. Behind Singapore, the UAE, every major European economy, Australia, Canada, South Korea, and — by a fraction — Taiwan. The reluctant user on a map of its own invention.
+  </p>
+  <h2>Where the Gulf got ahead</h2>
+  <p>
+    The UAE (64%) and Singapore (61%) sit well above what their GDP per capita would predict. Both have state-backed AI programmes, compact populations, high smartphone saturation, and governments that have written AI into every layer of public service. The rest of the top tier is European: France, Ireland, Norway, Spain, the Netherlands, the UK — all between 38% and 46%.
+  </p>
+  <p>
+    South Korea had the fastest change of any country over the year: from 25.9% in the first half to 30.7% in the second, climbing seven ranks in six months. The US moved 2.0 percentage points over the same window, a climb that left its rank unchanged.
+  </p>
+  <h2>The gap between making and using</h2>
+  <p>
+    The tiering here — leaders, strong, middle — is Microsoft's; we've mapped it onto Inkwell's paper palette so the ranks stay legible at a glance. Thirty countries carry a published percentage. The rest of the world is rendered as no-data, which is truer than a zero. The report's own map extrapolates a full world view; we've kept to the numbers.
+  </p>
+  <p>
+    Adoption trails invention by default: the microprocessor was invented in California decades before the median American household used one. But the gap between production and consumption of generative AI is unusually wide, and the shape of it — Gulf monarchies and Paris ahead of San Francisco — is the opposite of what the AI-race framing would suggest. <em>— Ollie</em>
+  </p>
+</Cartography>

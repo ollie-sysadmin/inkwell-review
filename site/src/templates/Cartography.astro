@@ -1,0 +1,1746 @@
+---
+/**
+ * Cartography — the map-format template. Used by any piece whose interactive
+ * chart is a world/regional map with a status overlay (Extradition Atlas,
+ * Fugitive Destinations, Popes, etc.).
+ *
+ * Locked style (20 April 2026 — Session 4): "The Plate × Photocopy Hand",
+ * a hybrid of directions A and C from the style-exploration mockups in
+ * `brand/mockups/atlas-direction-*.html`. See `brand/visual-system.md`
+ * § Cartography for the spec.
+ *
+ *   · Typographic cartouche (`Fig. N · Plate title`) overhangs the top-left
+ *     edge of the plate frame
+ *   · Per-piece motif stamped over the top-right edge (slot: `stamp`) —
+ *     ink-jittered, Bickford-Smith's "one mark per piece" move
+ *   · 1.5 px ink plate frame, square corners
+ *   · Two-column body: map (2.15fr) + plate-intro prose gutter (1fr)
+ *   · Map countries use SVG hatch patterns (paper-green diagonal for
+ *     treaty, paper-yellow anti-diagonal for reluctant) on a paper-blue
+ *     desk fill; the d3 path group carries an ink-jitter filter so
+ *     borders read photocopied rather than vector-clean
+ *   · Classifying legend table (glyph / NAME / count / italic referent) —
+ *     Werner's Nomenclature grammar, not a pill row
+ *   · Stats strip with two-plate misregistration: a `--desk`-coloured
+ *     shadow offset 2 px behind each ink glyph
+ *   · Wobble rules top and bottom of the chart section
+ *   · Long prose below the plate (300–500 word SEO body, default slot)
+ *
+ * Interactive logic (chips, havens toggle, URL state, tooltip) survives
+ * the port. Data is serialised into a JSON script tag and re-hydrated on
+ * the client.
+ */
+import ArticleLayout from '../layouts/ArticleLayout.astro';
+import {
+  ANCHORS as DEFAULT_ANCHORS,
+  EU_MEMBERS as DEFAULT_EU_MEMBERS,
+  FUGITIVE_HAVENS as DEFAULT_HAVENS,
+  COUNTRY_NAMES as DEFAULT_COUNTRY_NAMES,
+} from '../lib/cartography/treaty-data';
+
+/**
+ * Anchor shape — minimal duck-type so pieces can supply their own modules
+ * without importing from treaty-data.
+ */
+export interface StatTile {
+  label: string;
+  value: string;
+  unit?: string;
+  note: string;
+}
+
+export interface CartographyAnchor {
+  id: string;
+  label: string;
+  short: string;
+  partners: Set<string>;
+  reluctant?: Set<string>;
+  suspended?: Set<string>;
+  bloc?: Set<string>;
+  note: string;
+  /**
+   * Per-anchor override for the four-tile stats strip. When present,
+   * the template renders these tiles verbatim. When absent, it falls
+   * back to the Atlas-style computed tiles. Must be exactly four tiles.
+   */
+  statTiles?: StatTile[];
+}
+
+export interface Props {
+  desk?: 'cover' | 'data' | 'voice' | 'cities' | 'archive' | 'interviews';
+  /** Issue / figure number for the cartouche ("I", "II", ...) */
+  figNumber: string;
+  /** Cartouche title — may differ from the article headline if shorter reads better. */
+  plateTitle: string;
+  kicker: string;
+  headline: string;
+  /**
+   * Emphasis mark applied to a word or phrase inside the headline.
+   * One mark per headline, editor's choice per piece, never both.
+   */
+  emphasis?: {
+    type: 'highlight' | 'circled';
+    word: string;
+  };
+  standfirst: string;
+  meta: {
+    author: string;
+    datePublished: string; // ISO date
+    displayDate: string;   // "19 April 2026"
+    readMinutes: number;
+    formatLabel: string;   // "Interactive map"
+  };
+  /** Per-piece data. Defaults to the Extradition Atlas's treaty-data module. */
+  anchors?: CartographyAnchor[];
+  euMembers?: Set<string>;
+  havens?: Set<string>;
+  countryNames?: Record<string, string>;
+  /** Toggle copy — defaults to "Highlight fugitive havens". */
+  havensToggleLabel?: string;
+  /**
+   * Force-show or force-hide the havens toggle button. Defaults to
+   * `havens.size > 0` — pieces with no haven concept (like AI Adoption)
+   * hide the toggle automatically.
+   */
+  showHavensToggle?: boolean;
+  /** Map aria-label — defaults to the Atlas's. */
+  mapAriaLabel?: string;
+  /** Legend + status palette. Override if a piece needs a different set. */
+  legendLabels?: {
+    anchor: string;
+    treaty: string;
+    reluctant?: string;
+    suspended?: string;
+    haven: string;
+    noTreaty: string;
+    eu?: string;
+  };
+  /** Classifying key — referent column in the legend table. Italic serif, one-liner per row. */
+  legendReferents?: {
+    anchor: string;
+    treaty: string;
+    reluctant: string;
+    haven: string;
+    noTreaty: string;
+    suspended?: string;
+    bloc?: string;
+  };
+  /**
+   * Stats strip copy — label + per-tile note for the four big-number tiles.
+   * The four tiles are: anchor, partners (=top tier), reluctant (=secondary),
+   * noTreaty (=remainder). Override per piece so the stats read in the piece's
+   * idiom, not the Atlas's.
+   */
+  statLabels?: {
+    anchor: { label: string; note?: string };
+    partners: { label: string; unit: string; note: string };
+    reluctant: { label: string; unit: string; note: string };
+    noTreaty: { label: string; unit: string; note: string };
+  };
+  /** Tooltip notes — override per piece so the hover copy fits the idiom. */
+  tooltipNotes?: {
+    anchor?: string;       // falls back to anchor.note
+    eu?: string;
+    haven?: string;
+    suspended?: string;
+    reluctant?: string;
+    treaty?: string;
+    noTreatyHaven?: string; // when in haven set but no treaty
+    noTreaty?: string;
+  };
+  /** Source citation line under the plate. */
+  sourceLine: string;
+  /** OG meta. */
+  title?: string;
+  description?: string;
+  ogImage?: string;
+}
+
+const {
+  desk = 'data',
+  figNumber,
+  plateTitle,
+  kicker,
+  headline,
+  emphasis,
+  standfirst,
+  meta,
+  sourceLine,
+  anchors = DEFAULT_ANCHORS,
+  euMembers = DEFAULT_EU_MEMBERS,
+  havens = DEFAULT_HAVENS,
+  countryNames = DEFAULT_COUNTRY_NAMES,
+  havensToggleLabel = 'Highlight fugitive havens',
+  showHavensToggle,
+  mapAriaLabel = 'World map of extradition treaty status',
+  legendLabels = {
+    anchor: 'Anchor',
+    treaty: 'Treaty in force',
+    reluctant: 'Reluctant',
+    suspended: 'Treaty suspended',
+    haven: 'Fugitive haven',
+    noTreaty: 'No treaty',
+    eu: 'EU · European Arrest Warrant',
+  },
+  legendReferents = {
+    anchor: 'The inquiring state.',
+    treaty: 'Bilateral or multilateral obligation recognised.',
+    reluctant: 'Treaty exists; rarely honoured in practice.',
+    haven: 'Commonly cited fugitive destination.',
+    noTreaty: 'No obligation. Cooperation is ad-hoc or absent.',
+  },
+  statLabels = {
+    anchor: { label: 'Anchor' },
+    partners: { label: 'Treaty partners', unit: 'countries', note: 'bilateral or multilateral' },
+    reluctant: { label: 'Reluctant', unit: 'countries', note: 'treaty exists but rarely honoured' },
+    noTreaty: { label: 'No-treaty states', unit: 'countries', note: 'of ~195 sovereign states' },
+  },
+  tooltipNotes = {
+    eu: 'Covered by the European Arrest Warrant — streamlined surrender between all 27 member states.',
+    haven: 'Commonly cited as a destination where extradition to Western states is unlikely — no treaty, a constitutional bar on extraditing nationals, or selective enforcement in practice.',
+    suspended: 'Extradition treaty formally suspended.',
+    reluctant: 'A treaty exists on paper, but extradition requests are frequently refused or obstructed in practice.',
+    treaty: 'A bilateral extradition treaty or multilateral framework is in force.',
+    noTreatyHaven: 'Often cited as a fugitive destination.',
+    noTreaty: 'No bilateral extradition treaty in force. Cooperation possible only via ad-hoc reciprocity.',
+  },
+  title = headline,
+  description = standfirst,
+  ogImage,
+} = Astro.props;
+
+// Auto-derive per-piece OG image from the first social card if the caller
+// didn't supply one. Requires the piece slug matches the URL segment under
+// /pieces/ AND a matching src/pieces/<slug>.ts with socialCards[0].
+const slugMatch = Astro.url.pathname.match(/^\/pieces\/([^/]+)\/?$/);
+const pieceSlug = slugMatch?.[1];
+const autoOgImage = pieceSlug ? `/pieces/${pieceSlug}/social/0.png` : undefined;
+const resolvedOgImage = ogImage ?? autoOgImage;
+
+// Card-gallery assumption: one social card per anchor, index-aligned with
+// the anchors[] array. True for Atlas / FD / AI Adoption today because the
+// piece's src/pieces/<slug>.ts imports the same ANCHORS list the article
+// passes to the template. If a future piece decouples these, pass an
+// explicit cardCount / cardLabels prop — but the 1:1 pattern is the
+// intended one.
+const showCardGallery = Boolean(pieceSlug) && anchors.length >= 2;
+
+// Split the headline around the emphasis word so we can wrap it in .hl or .circ.
+const [headlineBefore, headlineAfter] = (() => {
+  if (!emphasis) return [headline, ''];
+  const idx = headline.indexOf(emphasis.word);
+  if (idx === -1) return [headline, ''];
+  return [headline.slice(0, idx), headline.slice(idx + emphasis.word.length)];
+})();
+const emphasisClass = emphasis?.type === 'circled' ? 'circ' : 'hl';
+
+// Serialise Sets → arrays for the client script.
+const anchorsPayload = anchors.map((a) => ({
+  id: a.id,
+  label: a.label,
+  short: a.short,
+  partners: Array.from(a.partners),
+  reluctant: a.reluctant ? Array.from(a.reluctant) : [],
+  suspended: a.suspended ? Array.from(a.suspended) : [],
+  bloc: a.bloc ? Array.from(a.bloc) : [],
+  note: a.note,
+  statTiles: a.statTiles,
+}));
+
+const dataPayload = {
+  anchors: anchorsPayload,
+  euMembers: Array.from(euMembers),
+  havens: Array.from(havens),
+  countryNames,
+  legendLabels,
+  legendReferents,
+  statLabels,
+  tooltipNotes,
+};
+
+const havensToggleVisible = showHavensToggle ?? havens.size > 0;
+---
+<ArticleLayout
+  desk={desk}
+  title={title}
+  description={description}
+  ogImage={resolvedOgImage}
+  article={{
+    headline,
+    datePublished: meta.datePublished,
+    author: meta.author,
+    image: resolvedOgImage,
+  }}
+>
+  <!-- ARTICLE HEADER -->
+  <header class="ah">
+    <div class="ah__kicker rule-wobble-bottom">
+      <span class="ah__swatch" aria-hidden="true"></span>
+      <span>{kicker}</span>
+    </div>
+    <h1 class="ah__headline">
+      {headlineBefore}
+      {emphasis && <span class={emphasisClass}>{emphasis.word}</span>}
+      {headlineAfter}
+    </h1>
+    <p class="ah__standfirst">{standfirst}</p>
+    <div class="ah__meta">
+      <span>By <em>{meta.author}</em></span>
+      <span class="dot">·</span>
+      <span>{meta.displayDate}</span>
+      <span class="dot">·</span>
+      <span>{meta.readMinutes} min read</span>
+      <span class="dot">·</span>
+      <span>{meta.formatLabel}</span>
+    </div>
+  </header>
+
+  <!-- CONTROLS (outside the plate — functional UI, not part of the plate aesthetic) -->
+  <div class="controls">
+    <div class="controls__group" role="radiogroup" aria-label="Anchor country">
+      <span class="controls__label">Anchor</span>
+      <div class="chips" id="cartography-chips"></div>
+    </div>
+    {havensToggleVisible && (
+      <div class="controls__group controls__group--right">
+        <button
+          type="button"
+          class="toggle"
+          id="cartography-havens-toggle"
+          aria-pressed="false"
+        >
+          <span class="toggle__dot" aria-hidden="true"></span>
+          <span class="toggle__label">{havensToggleLabel}</span>
+        </button>
+      </div>
+    )}
+  </div>
+
+  <!-- THE PLATE — cartouche + frame + two-column body + legend + stats -->
+  <section class="plate" aria-label="Interactive map">
+
+    <div class="plate__cartouche">
+      <span class="plate__fig">Fig. {figNumber}</span>
+      <span class="plate__title">{plateTitle}</span>
+    </div>
+
+    <div class="plate__stamp" aria-hidden="true">
+      <slot name="stamp" />
+    </div>
+
+    <div class="plate__rule" aria-hidden="true"></div>
+
+    <div class="plate__body">
+
+      <div class="map-wrap" id="cartography-map-wrap">
+        <svg
+          id="cartography-map"
+          viewBox="40 30 880 420"
+          preserveAspectRatio="xMidYMid meet"
+          role="img"
+          aria-label={mapAriaLabel}
+        >
+          <!-- Ocean is flat charcoal (#1F1F1F, see .map-wrap below).
+               A tiled Victorian-curiosities background was explored
+               Session 5 and rolled back; will revisit if Dene
+               supplies a hand-drawn source image. -->
+        </svg>
+        <div class="tooltip" id="cartography-tooltip" role="tooltip" aria-hidden="true"></div>
+      </div>
+
+      <aside class="plate__intro">
+        <slot name="plate-intro" />
+      </aside>
+
+    </div>
+
+    <!-- Classifying legend — Werner's Nomenclature grammar -->
+    <div class="plate__legend">
+      <h3 class="plate__legend-title">Classifying key</h3>
+      <table class="plate__legend-table" id="cartography-legend-table">
+        <!-- Rows populated by the client script so counts reflect the current anchor. -->
+      </table>
+    </div>
+
+    <!-- Stats strip — misregistration big numbers -->
+    <div class="stats" id="cartography-stats">
+      <!-- Populated by the client script. -->
+    </div>
+
+    <div class="plate__rule plate__rule--bottom" aria-hidden="true"></div>
+
+    <p class="plate__source">{sourceLine}</p>
+
+  </section>
+
+  {showCardGallery && (
+    <!-- ====================================================================
+         CARD GALLERY — horizontal scroll strip of the piece's social cards.
+         Iframes the live /pieces/[slug]/social/[index] routes at transform-
+         scale so the gallery is always fresh against the source of truth in
+         src/pieces/[slug].ts. Click a thumbnail → lightbox with the full
+         1080×1350 card, centered and fit-to-viewport.
+
+         Locked pattern (Session 8 · 22 April 2026 · horizontal-strip revision):
+         every Cartography piece gets this automatically. Single continuous
+         strip works for 3 or 8 cards equally — no ragged rows.
+         ==================================================================== -->
+    <section class="card-gallery rule-wobble-top" aria-label="Piece insights — social-card collection">
+      <header class="card-gallery__head">
+        <div class="card-gallery__headings">
+          <h3 class="card-gallery__title">The insights</h3>
+          <p class="card-gallery__hint">
+            Here's what stood out from the data. Click a card to open it full size.
+          </p>
+        </div>
+        <div class="card-gallery__nav" id="card-gallery-nav" aria-hidden="true">
+          <button type="button" class="card-gallery__arrow" data-dir="prev" aria-label="Scroll insights left">‹</button>
+          <button type="button" class="card-gallery__arrow" data-dir="next" aria-label="Scroll insights right">›</button>
+        </div>
+      </header>
+
+      <div class="card-gallery__strip" id="card-gallery-strip" tabindex="0" role="list" aria-label="Insight cards">
+        {anchors.map((a, i) => (
+          <button
+            type="button"
+            class="card-gallery__item"
+            data-index={i}
+            data-short={a.short}
+            data-label={a.label}
+            aria-label={`Open card for ${a.label}`}
+            role="listitem"
+          >
+            <div class="card-gallery__frame-wrap" aria-hidden="true">
+              <iframe
+                class="card-gallery__frame"
+                src={`/pieces/${pieceSlug}/social/${i}`}
+                title={`Card ${i + 1}: ${a.label}`}
+                tabindex="-1"
+                loading="lazy"
+              />
+            </div>
+            <div class="card-gallery__caption">
+              <span class="card-gallery__short">{a.short}</span>
+              <span class="card-gallery__label">{a.label}</span>
+            </div>
+          </button>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <!-- STRUCTURED PROSE — 300-500 word SEO body. Default slot. -->
+  <section class="prose">
+    <slot />
+  </section>
+
+  {showCardGallery && (
+    <!-- Lightbox — centered on the viewport, fit-to-viewport without scroll.
+         Close button floats top-right; label + open-standalone link sit in
+         a small footer under the card. The card keeps its own chrome inside
+         the iframe — the lightbox adds nothing around it. -->
+    <dialog class="card-lightbox" id="card-lightbox" aria-label="Card detail">
+      <button
+        type="button"
+        class="card-lightbox__close"
+        id="card-lightbox-close"
+        aria-label="Close"
+      >×</button>
+
+      <div class="card-lightbox__viewport" aria-hidden="true">
+        <iframe
+          class="card-lightbox__frame"
+          id="card-lightbox-frame"
+          src="about:blank"
+          title="Card detail"
+        />
+      </div>
+
+      <footer class="card-lightbox__meta">
+        <span class="card-lightbox__fig">
+          Fig. {figNumber} · <em id="card-lightbox-label">—</em>
+        </span>
+        <a
+          class="card-lightbox__action"
+          id="card-lightbox-open"
+          href="#"
+          target="_blank"
+          rel="noopener"
+        >Open standalone ↗</a>
+      </footer>
+    </dialog>
+  )}
+
+  <!-- SERIALISED DATA for the client script -->
+  <script type="application/json" id="cartography-data" set:html={JSON.stringify(dataPayload)}></script>
+  {showCardGallery && (
+    <script type="application/json" id="cartography-gallery-data" set:html={JSON.stringify({ slug: pieceSlug, count: anchors.length })}></script>
+  )}
+</ArticleLayout>
+
+<!-- d3 + topojson from CDN, then the interactive logic. -->
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script is:inline>
+  (() => {
+    const dataEl = document.getElementById('cartography-data');
+    if (!dataEl) return;
+    const raw = JSON.parse(dataEl.textContent);
+    const anchors = raw.anchors.map((a) => ({
+      ...a,
+      partners: new Set(a.partners),
+      reluctant: new Set(a.reluctant),
+      suspended: new Set(a.suspended),
+      bloc: new Set(a.bloc),
+    }));
+    const havens = new Set(raw.havens);
+    const countryNames = raw.countryNames;
+    const legendLabels = raw.legendLabels;
+    const legendReferents = raw.legendReferents;
+    const statLabels = raw.statLabels;
+    const tooltipNotes = raw.tooltipNotes || {};
+
+    // ---- URL state ----
+    const params = new URLSearchParams(window.location.search);
+    const initialAnchor =
+      anchors.find((a) => a.short === (params.get('anchor') || '').toUpperCase()) ||
+      anchors.find((a) => a.id === params.get('anchor')) ||
+      anchors[0];
+    let currentAnchor = initialAnchor;
+    let havensMode = params.get('havens') === '1';
+
+    function syncUrl() {
+      const p = new URLSearchParams();
+      p.set('anchor', currentAnchor.short);
+      if (havensMode) p.set('havens', '1');
+      history.replaceState(null, '', `${window.location.pathname}?${p.toString()}`);
+    }
+
+    // ---- Chip controls ----
+    const chipsContainer = document.getElementById('cartography-chips');
+    anchors.forEach((a) => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'chip' + (a === currentAnchor ? ' is-active' : '');
+      chip.textContent = a.label;
+      chip.dataset.id = a.id;
+      chip.setAttribute('role', 'radio');
+      chip.setAttribute('aria-checked', a === currentAnchor ? 'true' : 'false');
+      chip.addEventListener('click', () => {
+        currentAnchor = a;
+        document.querySelectorAll('.chip').forEach((c) => {
+          const active = c.dataset.id === a.id;
+          c.classList.toggle('is-active', active);
+          c.setAttribute('aria-checked', active ? 'true' : 'false');
+        });
+        syncUrl();
+        render();
+      });
+      chipsContainer.appendChild(chip);
+    });
+
+    // ---- Haven toggle (only present if the piece has havens) ----
+    const havensToggle = document.getElementById('cartography-havens-toggle');
+    if (havensToggle) {
+      if (havensMode) havensToggle.classList.add('is-active');
+      havensToggle.setAttribute('aria-pressed', havensMode ? 'true' : 'false');
+      havensToggle.addEventListener('click', () => {
+        havensMode = !havensMode;
+        havensToggle.classList.toggle('is-active', havensMode);
+        havensToggle.setAttribute('aria-pressed', havensMode ? 'true' : 'false');
+        syncUrl();
+        render();
+      });
+    }
+
+    // ---- Map ----
+    const svg = d3.select('#cartography-map');
+    const tooltipEl = document.getElementById('cartography-tooltip');
+    const mapWrap = document.getElementById('cartography-map-wrap');
+    const width = 960, height = 500;
+    const projection = d3.geoNaturalEarth1().scale(175).translate([width / 2, height / 2 + 20]);
+    const path = d3.geoPath(projection);
+
+    let countries = [];
+    let worldReady = false;
+    // Ink-jitter is applied to the path group via CSS so the tooltip
+    // (which lives outside the SVG) stays crisp.
+    const g = svg.append('g').attr('class', 'country-group');
+
+    const zoom = d3.zoom().scaleExtent([1, 8]).on('zoom', (e) => {
+      g.attr('transform', e.transform);
+    });
+    svg.call(zoom);
+
+    d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then((world) => {
+      countries = topojson.feature(world, world.objects.countries).features;
+      g.selectAll('path.country')
+        .data(countries)
+        .join('path')
+        .attr('class', 'country')
+        .attr('d', path)
+        .attr('data-id', (d) => String(d.id).padStart(3, '0'))
+        .on('mousemove', function (event, d) {
+          const id = String(d.id).padStart(3, '0');
+          const name = countryNames[id] || d.properties.name;
+          const status = getStatus(id);
+          const rect = mapWrap.getBoundingClientRect();
+          tooltipEl.style.left = (event.clientX - rect.left + 14) + 'px';
+          tooltipEl.style.top = (event.clientY - rect.top + 14) + 'px';
+          tooltipEl.style.opacity = '1';
+          tooltipEl.setAttribute('aria-hidden', 'false');
+          tooltipEl.innerHTML =
+            '<div class="tooltip__name">' + name + '</div>' +
+            '<div class="tooltip__status">' + status.label + '</div>' +
+            (status.note ? '<div class="tooltip__note">' + status.note + '</div>' : '');
+        })
+        .on('mouseleave', () => {
+          tooltipEl.style.opacity = '0';
+          tooltipEl.setAttribute('aria-hidden', 'true');
+        })
+        .on('click', function (_event, d) {
+          const id = String(d.id).padStart(3, '0');
+          const matchAnchor = anchors.find((a) => a.id === id);
+          if (matchAnchor) {
+            currentAnchor = matchAnchor;
+            document.querySelectorAll('.chip').forEach((c) => {
+              const active = c.dataset.id === matchAnchor.id;
+              c.classList.toggle('is-active', active);
+              c.setAttribute('aria-checked', active ? 'true' : 'false');
+            });
+            syncUrl();
+            render();
+          }
+        });
+      worldReady = true;
+      render();
+    }).catch((err) => {
+      console.error('Cartography: failed to load world atlas', err);
+      mapWrap.innerHTML = '<div class="map-error">Could not load map data. Please refresh.</div>';
+    });
+
+    function getStatus(id) {
+      if (id === currentAnchor.id) {
+        return { cls: 'anchor', label: legendLabels.anchor, note: tooltipNotes.anchor || currentAnchor.note };
+      }
+      if (currentAnchor.id === 'eu' && currentAnchor.bloc.has(id)) {
+        return {
+          cls: 'eu-bloc',
+          label: legendLabels.eu || legendLabels.treaty,
+          note: tooltipNotes.eu,
+        };
+      }
+      if (havensMode && havens.has(id)) {
+        const hasTreaty = currentAnchor.partners.has(id);
+        const isReluctant = currentAnchor.reluctant.has(id);
+        if (!hasTreaty || isReluctant) {
+          return {
+            cls: 'haven',
+            label: legendLabels.haven,
+            note: tooltipNotes.haven,
+          };
+        }
+      }
+      if (currentAnchor.suspended.has(id)) {
+        return {
+          cls: 'suspended',
+          label: legendLabels.suspended || legendLabels.noTreaty,
+          note: tooltipNotes.suspended,
+        };
+      }
+      if (currentAnchor.reluctant.has(id)) {
+        return {
+          cls: 'reluctant',
+          label: legendLabels.reluctant || legendLabels.noTreaty,
+          note: tooltipNotes.reluctant,
+        };
+      }
+      if (currentAnchor.partners.has(id)) {
+        return {
+          cls: 'treaty',
+          label: legendLabels.treaty,
+          note: tooltipNotes.treaty,
+        };
+      }
+      if (havens.has(id)) {
+        return {
+          cls: 'no-treaty',
+          label: legendLabels.noTreaty,
+          note: tooltipNotes.noTreatyHaven,
+        };
+      }
+      return {
+        cls: 'no-treaty',
+        label: legendLabels.noTreaty,
+        note: tooltipNotes.noTreaty,
+      };
+    }
+
+    function render() {
+      if (!worldReady) return;
+      d3.selectAll('path.country').each(function (d) {
+        const id = String(d.id).padStart(3, '0');
+        const status = getStatus(id);
+        d3.select(this).attr('class', 'country country--' + status.cls);
+      });
+      renderLegendTable();
+      renderStats();
+    }
+
+    function renderLegendTable() {
+      const a = currentAnchor;
+      const rows = [];
+      rows.push({ cls: 'anchor', name: legendLabels.anchor, count: 1, referent: legendReferents.anchor });
+      if (a.id === 'eu') {
+        rows.push({ cls: 'eu-bloc', name: legendLabels.eu, count: a.bloc.size, referent: 'Covered by the European Arrest Warrant.' });
+      }
+      rows.push({ cls: 'treaty', name: legendLabels.treaty, count: a.partners.size, referent: legendReferents.treaty });
+      if (a.reluctant.size > 0) {
+        rows.push({ cls: 'reluctant', name: legendLabels.reluctant, count: a.reluctant.size, referent: legendReferents.reluctant });
+      }
+      if (a.suspended.size > 0 && legendLabels.suspended) {
+        rows.push({ cls: 'suspended', name: legendLabels.suspended, count: a.suspended.size, referent: legendReferents.suspended || '' });
+      }
+      if (havensMode) {
+        const havenCount = Array.from(havens).filter((id) => !a.partners.has(id) || a.reluctant.has(id)).length;
+        rows.push({ cls: 'haven', name: legendLabels.haven, count: havenCount, referent: legendReferents.haven });
+      }
+      // Unclassified count — 195 sovereign states minus every classified set
+      // (partners + reluctant + suspended + bloc). Fixes the old "195 −
+      // partners" shortcut, which understated no-treaty when later pieces
+      // (like the AI Adoption Gap) use multiple non-overlapping tiers.
+      const classifiedSize = a.partners.size + a.reluctant.size + a.suspended.size + a.bloc.size;
+      const noTreatyCount = Math.max(0, 195 - classifiedSize);
+      rows.push({ cls: 'no-treaty', name: legendLabels.noTreaty, count: noTreatyCount, referent: legendReferents.noTreaty });
+
+      const table = document.getElementById('cartography-legend-table');
+      table.innerHTML = rows.map((r) =>
+        '<tr>' +
+        '<td><span class="legend__sw legend__sw--' + r.cls + '"></span></td>' +
+        '<td class="legend__name">' + r.name + '</td>' +
+        '<td class="legend__count">' + r.count + '</td>' +
+        '<td class="legend__referent">' + r.referent + '</td>' +
+        '</tr>'
+      ).join('');
+    }
+
+    // ---- Card gallery: scroll-strip navigation + lightbox ----
+    // Gallery is a horizontal flex strip. Arrow buttons advance by roughly
+    // one "page" (viewport width of the strip); touch + trackpad scroll
+    // natively. Lightbox behaviour unchanged (click thumbnail → open; Esc
+    // or click-outside → close).
+    (function wireCardGallery() {
+      const galleryDataEl = document.getElementById('cartography-gallery-data');
+      if (!galleryDataEl) return;
+      let galleryData;
+      try { galleryData = JSON.parse(galleryDataEl.textContent); } catch (e) { return; }
+      const { slug } = galleryData;
+
+      // ---- Arrow scroll ----
+      const strip = document.getElementById('card-gallery-strip');
+      const nav = document.getElementById('card-gallery-nav');
+      if (strip && nav) {
+        // Smooth scroll via setTimeout (not requestAnimationFrame — rAF
+        // gets throttled in backgrounded / headless contexts, and the
+        // native {behavior:'smooth'} is unreliable in this Chromium + scaled
+        // iframe combination). setTimeout-driven easing is reliable across
+        // environments.
+        function smoothScrollBy(delta, duration) {
+          const d = duration || 360;
+          const start = strip.scrollLeft;
+          const startTime = Date.now();
+          function step() {
+            const elapsed = Date.now() - startTime;
+            const t = Math.min(1, elapsed / d);
+            const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+            strip.scrollLeft = start + delta * eased;
+            if (t < 1) setTimeout(step, 16);
+          }
+          step();
+        }
+
+        const arrows = nav.querySelectorAll('.card-gallery__arrow');
+        arrows.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const dir = btn.getAttribute('data-dir') === 'next' ? 1 : -1;
+            // One "page" = strip width minus a slight peek, so the last
+            // visible card becomes the new first. Clamp step to ~3 cards.
+            const step = Math.max(280, Math.min(strip.clientWidth * 0.8, 280 * 3));
+            smoothScrollBy(step * dir);
+          });
+        });
+        // Hide nav arrows when the strip fits without scrolling. Because
+        // the strip contains iframes that load async and affect scrollWidth,
+        // re-check on resize + after a short delay + on iframe load.
+        function updateNav() {
+          const overflowing = strip.scrollWidth > strip.clientWidth + 2;
+          nav.style.visibility = overflowing ? 'visible' : 'hidden';
+        }
+        updateNav();
+        window.addEventListener('resize', updateNav);
+        if (typeof ResizeObserver === 'function') {
+          new ResizeObserver(updateNav).observe(strip);
+        }
+        // Iframe-load as a secondary trigger — scrollWidth can shift once
+        // iframe content paints and forces layout changes.
+        strip.querySelectorAll('iframe').forEach((iframe) => {
+          iframe.addEventListener('load', updateNav);
+        });
+        // Belt-and-braces re-check after the initial render settles.
+        setTimeout(updateNav, 400);
+        setTimeout(updateNav, 1500);
+      }
+
+      // ---- Lightbox ----
+      const dialog = document.getElementById('card-lightbox');
+      const frame = document.getElementById('card-lightbox-frame');
+      const labelEl = document.getElementById('card-lightbox-label');
+      const openLink = document.getElementById('card-lightbox-open');
+      const closeBtn = document.getElementById('card-lightbox-close');
+      if (!dialog || !frame || !labelEl || !openLink || !closeBtn) return;
+
+      // Compute a fit-to-viewport scale — pick whichever of "fill 85% of
+       // height" or "fill 90% of width" is smaller, so the card never
+       // overflows. Card is 1080×1350 at 4:5.
+      function computeScale() {
+        const maxH = window.innerHeight * 0.85;
+        const maxW = window.innerWidth * 0.90;
+        return Math.min(maxH / 1350, maxW / 1080);
+      }
+      function applyScale() {
+        dialog.style.setProperty('--scale', String(computeScale()));
+      }
+
+      document.querySelectorAll('.card-gallery__item').forEach((item) => {
+        item.addEventListener('click', () => {
+          const index = item.getAttribute('data-index');
+          const label = item.getAttribute('data-label');
+          const url = '/pieces/' + slug + '/social/' + index;
+          frame.setAttribute('src', url);
+          labelEl.textContent = label;
+          openLink.setAttribute('href', url);
+          applyScale();
+          if (typeof dialog.showModal === 'function') dialog.showModal();
+          else dialog.setAttribute('open', '');
+        });
+      });
+
+      function closeLightbox() {
+        if (typeof dialog.close === 'function') dialog.close();
+        else dialog.removeAttribute('open');
+        // Blank the iframe so d3 stops running in the background
+        frame.setAttribute('src', 'about:blank');
+      }
+      closeBtn.addEventListener('click', closeLightbox);
+      // Click-outside-to-close: dialog backdrop click fires on the dialog itself.
+      dialog.addEventListener('click', (event) => {
+        if (event.target === dialog) closeLightbox();
+      });
+      dialog.addEventListener('close', () => {
+        frame.setAttribute('src', 'about:blank');
+      });
+      // Keep the card fitted when the window resizes while open.
+      window.addEventListener('resize', () => {
+        if (dialog.open) applyScale();
+      });
+    })();
+
+    function renderStats() {
+      const a = currentAnchor;
+      let tiles;
+      if (Array.isArray(a.statTiles) && a.statTiles.length === 4) {
+        // Per-anchor override wins — render the bespoke tiles verbatim.
+        tiles = a.statTiles.map((t) => ({
+          label: t.label,
+          value: t.value,
+          unit: t.unit || '',
+          note: t.note,
+        }));
+      } else {
+        const totalCountries = 195;
+        const hasBloc = a.bloc && a.bloc.size > 0;
+        const treatyCount = hasBloc
+          ? Math.min(a.partners.size + a.bloc.size, totalCountries)
+          : a.partners.size;
+        const reluctantCount = a.reluctant ? a.reluctant.size : 0;
+        const noTreatyCount = totalCountries - treatyCount;
+        tiles = [
+          { label: statLabels.anchor.label, value: a.short, unit: '', note: statLabels.anchor.note || a.label },
+          { label: statLabels.partners.label, value: String(treatyCount), unit: statLabels.partners.unit, note: statLabels.partners.note },
+          { label: statLabels.reluctant.label, value: String(reluctantCount), unit: statLabels.reluctant.unit, note: statLabels.reluctant.note },
+          { label: statLabels.noTreaty.label, value: '~' + noTreatyCount, unit: statLabels.noTreaty.unit, note: statLabels.noTreaty.note },
+        ];
+      }
+      document.getElementById('cartography-stats').innerHTML = tiles
+        .map((s) =>
+          '<div class="stat">' +
+          '<div class="stat__label">' + s.label + '</div>' +
+          '<div class="stat__value stat__value--misreg" data-value="' + s.value + '">' + s.value + (s.unit ? '<span class="stat__unit">' + s.unit + '</span>' : '') + '</div>' +
+          '<div class="stat__note">' + s.note + '</div>' +
+          '</div>'
+        )
+        .join('');
+    }
+  })();
+</script>
+
+<style>
+  /* ============================================================
+     ARTICLE HEADER — unchanged from the first port. Narrow measure
+     because the long prose below demands a narrow headline for
+     reading rhythm, not a giant banner.
+     ============================================================ */
+  .ah {
+    /* Header spans the full plate width below. The prose body
+       that follows the chart stays narrow (see `.prose`); the
+       header needs to frame the chart, not the prose. */
+    max-width: 1100px;
+    margin: 0 auto 40px;
+  }
+  .ah__kicker {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding-bottom: 16px;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .ah__swatch {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    background: var(--desk);
+    border: 1.5px solid var(--photocopy-black);
+  }
+  .ah__headline {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(36px, 4.8vw, 56px);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin: 0 0 16px;
+    text-wrap: balance;
+  }
+  .ah__headline :global(.hl) {
+    background: var(--photocopy-black);
+    color: var(--photocopy-white);
+    padding: 0 0.18em 0.08em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    filter: url(#ink-jitter);
+  }
+  .ah__headline :global(.circ) {
+    position: relative;
+    display: inline-block;
+    padding: 0 0.18em;
+    z-index: 0;
+  }
+  .ah__headline :global(.circ)::before {
+    content: "";
+    position: absolute;
+    inset: -0.06em -0.12em -0.08em -0.12em;
+    border: 2.5px solid var(--photocopy-black);
+    border-radius: 50%;
+    transform: rotate(-2.5deg);
+    z-index: -1;
+    pointer-events: none;
+    filter: url(#ink-jitter);
+  }
+  .ah__standfirst {
+    font-family: var(--font-wordmark);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 1.4;
+    margin: 0 0 18px;
+  }
+  .ah__meta {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    flex-wrap: wrap;
+  }
+  .ah__meta em {
+    font-family: var(--font-wordmark);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 14px;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .ah__meta .dot {
+    opacity: 0.45;
+  }
+
+  /* ============================================================
+     CONTROLS — outside the plate. Functional UI, not ornament.
+     ============================================================ */
+  .controls {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 0 0 20px;
+    max-width: 1100px;
+  }
+  .controls__group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .controls__group--right {
+    margin-left: auto;
+  }
+  .controls__label {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+
+  .chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  :global(.chip) {
+    background: transparent;
+    border: 1.5px solid var(--photocopy-black);
+    color: var(--photocopy-black);
+    padding: 7px 12px 8px;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  :global(.chip:hover),
+  :global(.chip.is-active) {
+    background: var(--photocopy-black);
+    color: var(--photocopy-white);
+  }
+
+  :global(.toggle) {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    border: 1.5px solid var(--photocopy-black);
+    padding: 7px 12px 8px;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--photocopy-black);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  :global(.toggle__dot) {
+    width: 10px;
+    height: 10px;
+    border: 1.5px solid var(--photocopy-black);
+    background: transparent;
+    display: inline-block;
+  }
+  :global(.toggle:hover),
+  :global(.toggle.is-active) {
+    background: var(--photocopy-black);
+    color: var(--photocopy-white);
+  }
+  :global(.toggle:hover .toggle__dot),
+  :global(.toggle.is-active .toggle__dot) {
+    background: var(--photocopy-white);
+    border-color: var(--photocopy-white);
+  }
+
+  /* ============================================================
+     THE PLATE
+     ============================================================ */
+  .plate {
+    position: relative;
+    border: 1.5px solid var(--photocopy-black);
+    background: var(--photocopy-white);
+    padding: 28px 30px 26px;
+    margin: 0 0 48px;
+  }
+
+  /* Cartouche — top-left overhang, white bg masks the frame behind. */
+  .plate__cartouche {
+    position: absolute;
+    top: -1.5px;
+    left: 24px;
+    background: var(--photocopy-white);
+    padding: 0 12px 0 8px;
+    transform: translateY(-52%);
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .plate__fig {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--photocopy-black);
+    border-right: 1.5px solid var(--photocopy-black);
+    padding-right: 10px;
+  }
+  .plate__title {
+    font-family: var(--font-wordmark);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 16px;
+    letter-spacing: -0.01em;
+    color: var(--photocopy-black);
+  }
+
+  /* Per-piece stamp — top-right overhang, ink-jittered. Slot content
+     should be an inline <svg> around 30×22. */
+  .plate__stamp {
+    position: absolute;
+    top: -1.5px;
+    right: 24px;
+    background: var(--photocopy-white);
+    padding: 6px 10px;
+    transform: translateY(-45%);
+  }
+  .plate__stamp :global(svg) {
+    display: block;
+    width: 30px;
+    height: 22px;
+    filter: url(#ink-jitter);
+  }
+
+  /* Wobble rules — top and bottom (inside the plate). */
+  .plate__rule {
+    height: 12px;
+    background-image:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 6' preserveAspectRatio='none'><path d='M0 3 Q 75 1.4 150 3 T 300 3 T 450 3 T 600 3' stroke='%23111111' stroke-width='2.4' fill='none' stroke-linecap='round'/></svg>");
+    background-size: 600px 6px;
+    background-repeat: repeat-x;
+    background-position: center;
+    margin: 6px 0 18px;
+  }
+  .plate__rule--bottom {
+    margin: 26px 0 18px;
+  }
+
+  /* ---- Body: map left, intro right ---- */
+  .plate__body {
+    display: grid;
+    grid-template-columns: 2.15fr 1fr;
+    gap: 28px;
+  }
+  .plate__intro :global(p) {
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.55;
+    margin: 0 0 12px;
+  }
+  .plate__intro :global(p:first-of-type::first-letter) {
+    font-family: var(--font-display);
+    font-weight: 800;
+    float: left;
+    font-size: 3.6em;
+    line-height: 0.82;
+    padding: 4px 8px 0 0;
+  }
+  .plate__intro :global(strong) {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- Map (Variant A — locked Session 5, 21 April 2026) ----
+     The plate is dark across every desk. Two ink tones in play:
+     the OCEAN (chart-card background) is a slight charcoal lift
+     above pure ink, and NO-RECORD countries are pure ink-black.
+     Just enough contrast between the two to keep the lattice of
+     country borders readable inside the no-record mass — and to
+     let the photocopy-white anchor still pop. The desk colour
+     stays in the chrome only (kicker swatch, masthead, headline
+     marks, misregistration shadow on the stat strip). */
+  .map-wrap {
+    position: relative;
+    background: #1F1F1F; /* ocean — charcoal, lifted slightly above no-record ink */
+    border: 1.5px solid var(--photocopy-black);
+    overflow: hidden;
+  }
+  .map-wrap :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+    cursor: grab;
+  }
+  .map-wrap :global(svg:active) {
+    cursor: grabbing;
+  }
+  /* Ink-jitter on the path group — keeps the tooltip crisp because
+     it lives outside the SVG. */
+  .map-wrap :global(svg > g.country-group) {
+    filter: url(#ink-jitter);
+  }
+  .map-wrap :global(.country) {
+    /* Default = no-record / no-treaty: pure ink fill, white lattice
+       border at higher opacity than before so the country grid is
+       readable inside the no-record ink mass (Africa, Russia, etc.). */
+    fill: var(--photocopy-black);
+    stroke: var(--photocopy-white);
+    stroke-width: 0.6;
+    stroke-opacity: 0.7;
+    transition: stroke-opacity 0.15s ease, stroke-width 0.15s ease;
+    cursor: pointer;
+  }
+  .map-wrap :global(.country:hover) {
+    stroke-opacity: 1;
+    stroke-width: 1.2;
+  }
+  .map-wrap :global(.country--treaty)    { fill: var(--paper-green);  stroke-opacity: 0.8; }
+  .map-wrap :global(.country--reluctant) { fill: var(--paper-yellow); stroke-opacity: 0.8; }
+  .map-wrap :global(.country--haven)     { fill: var(--paper-pink);   stroke-opacity: 0.8; }
+  .map-wrap :global(.country--suspended) { fill: var(--paper-brown);  stroke-opacity: 0.8; }
+  .map-wrap :global(.country--eu-bloc)   { fill: var(--paper-purple); stroke-opacity: 0.8; }
+  .map-wrap :global(.country--no-treaty) { fill: var(--photocopy-black); }
+  .map-wrap :global(.country--anchor) {
+    fill: var(--photocopy-white);
+    stroke: var(--photocopy-black);
+    stroke-opacity: 1;
+    stroke-width: 1;
+  }
+  :global(.map-error) {
+    padding: 60px;
+    text-align: center;
+    font-family: var(--font-body);
+    font-style: italic;
+    color: var(--fg-muted);
+  }
+
+  /* ---- Tooltip ---- */
+  :global(.tooltip) {
+    position: absolute;
+    pointer-events: none;
+    background: var(--photocopy-white);
+    border: 1.5px solid var(--photocopy-black);
+    padding: 10px 14px 12px;
+    max-width: 260px;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+    z-index: 10;
+  }
+  :global(.tooltip__name) {
+    font-family: var(--font-wordmark);
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 1.1;
+    color: var(--photocopy-black);
+    margin-bottom: 4px;
+  }
+  :global(.tooltip__status) {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--photocopy-black);
+    margin-bottom: 6px;
+  }
+  :global(.tooltip__note) {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--fg-muted);
+  }
+
+  /* ---- Classifying legend (table) ---- */
+  .plate__legend {
+    margin-top: 26px;
+    padding-top: 18px;
+    border-top: 1.5px solid var(--photocopy-black);
+  }
+  .plate__legend-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    margin: 0 0 12px;
+    color: var(--fg-muted);
+  }
+  :global(.plate__legend-table) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  :global(.plate__legend-table td) {
+    padding: 8px 10px 8px 0;
+    vertical-align: middle;
+    border-bottom: 1px dotted var(--border);
+  }
+  :global(.plate__legend-table tr:last-child td) {
+    border-bottom: 0;
+  }
+  :global(.legend__sw) {
+    display: inline-block;
+    width: 22px;
+    height: 14px;
+    border: 1.5px solid var(--photocopy-black);
+    vertical-align: middle;
+  }
+  /* Legend swatches mirror the in-map fills — solid paper colours,
+     with anchor (white) and no-treaty (ink) at the two ends. */
+  :global(.legend__sw--anchor)    { background: var(--photocopy-white); }
+  :global(.legend__sw--treaty)    { background: var(--paper-green); }
+  :global(.legend__sw--reluctant) { background: var(--paper-yellow); }
+  :global(.legend__sw--haven)     { background: var(--paper-pink); }
+  :global(.legend__sw--suspended) { background: var(--paper-brown); }
+  :global(.legend__sw--eu-bloc)   { background: var(--paper-purple); }
+  :global(.legend__sw--no-treaty) { background: var(--photocopy-black); }
+  :global(.legend__name) {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  :global(.legend__count) {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+    text-align: right;
+    padding-right: 18px;
+  }
+  :global(.legend__referent) {
+    font-family: var(--font-wordmark);
+    font-style: italic;
+    font-size: 13px;
+    color: var(--fg-muted);
+  }
+
+  /* ---- Stats strip with misregistration ---- */
+  :global(.stats) {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-top: 24px;
+  }
+  :global(.stat) {
+    border: 1.5px solid var(--photocopy-black);
+    padding: 14px 16px 12px;
+    background: var(--photocopy-white);
+  }
+  :global(.stat__label) {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    margin: 0 0 4px;
+  }
+  :global(.stat__value) {
+    font-family: var(--font-wordmark);
+    font-weight: 400;
+    font-size: clamp(34px, 4vw, 52px);
+    line-height: 0.92;
+    letter-spacing: -0.02em;
+    color: var(--photocopy-black);
+    font-variant-numeric: lining-nums;
+    position: relative;
+    isolation: isolate;
+  }
+  :global(.stat__value--misreg)::before {
+    content: attr(data-value);
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    color: var(--desk);
+    z-index: -1;
+    filter: url(#ink-jitter);
+  }
+  :global(.stat__unit) {
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--fg-muted);
+    margin-left: 6px;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  :global(.stat__note) {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 11px;
+    line-height: 1.35;
+    color: var(--fg-muted);
+    margin: 4px 0 0;
+  }
+
+  /* ---- Source line ---- */
+  .plate__source {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--fg-muted);
+    margin: 0;
+    max-width: 72ch;
+  }
+
+  /* ============================================================
+     STRUCTURED PROSE — 300–500 word SEO body. Narrow measure
+     because the headline above is also narrow and the whole
+     column reads as one object.
+     ============================================================ */
+  .prose {
+    max-width: 36rem;
+    margin: 0 auto;
+  }
+  .prose :global(h2) {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 28px;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin: 40px 0 12px;
+  }
+  .prose :global(p) {
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.58;
+    margin: 0 0 16px;
+  }
+  .prose :global(p:first-of-type::first-letter) {
+    font-family: var(--font-display);
+    font-weight: 800;
+    float: left;
+    font-size: 5.4em;
+    line-height: 0.84;
+    padding: 6px 12px 0 0;
+    color: var(--photocopy-black);
+  }
+  .prose :global(em) {
+    font-family: var(--font-wordmark);
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  /* ============================================================
+     CARD GALLERY — horizontal scroll strip below the plate.
+     One continuous row regardless of card count; arrow buttons
+     page L/R (hidden when strip fits without scrolling, also on
+     touch). Iframes render the live card at 0.24 scale.
+     ============================================================ */
+  .card-gallery {
+    max-width: 1100px;
+    margin: 0 auto 48px;
+    padding-top: 32px;
+  }
+  .card-gallery__head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin: 0 0 20px;
+  }
+  .card-gallery__headings {
+    min-width: 0;
+  }
+  .card-gallery__title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    margin: 0 0 6px;
+    color: var(--photocopy-black);
+  }
+  .card-gallery__hint {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--fg-muted);
+    margin: 0;
+    max-width: 54ch;
+  }
+  .card-gallery__nav {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  :global(.card-gallery__arrow) {
+    appearance: none;
+    background: var(--photocopy-white);
+    border: 1.5px solid var(--photocopy-black);
+    width: 34px;
+    height: 34px;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 1;
+    color: var(--photocopy-black);
+    cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease;
+    padding: 0;
+  }
+  :global(.card-gallery__arrow:hover) {
+    background: var(--photocopy-black);
+    color: var(--photocopy-white);
+  }
+
+  .card-gallery__strip {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    /* scroll-behavior + scroll-snap-type both removed — they were racing
+       each other and cancelling programmatic scrollBy() from the arrow
+       buttons. Smoothness is now applied per-call in the arrow JS via
+       scrollBy({ behavior: 'smooth' }). Arrow paging gives the structure
+       snap would have provided. */
+    /* A touch of padding so cards don't collide with the container's edge
+       and the last card can scroll flush left on wider viewports. */
+    padding: 4px 40px 14px 4px;
+    margin: 0 -4px;
+    /* Hide scrollbar while keeping scrollability. */
+    scrollbar-width: none;
+  }
+  .card-gallery__strip::-webkit-scrollbar {
+    display: none;
+  }
+  .card-gallery__strip:focus-visible {
+    outline: 2px solid var(--photocopy-black);
+    outline-offset: 2px;
+  }
+
+  :global(.card-gallery__item) {
+    /* Unset <button> defaults so the thumbnail reads as a tile. */
+    appearance: none;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 0 0 260px;
+    transition: transform 0.15s ease;
+  }
+  :global(.card-gallery__item:hover) {
+    transform: translateY(-2px);
+  }
+  :global(.card-gallery__item:focus-visible) {
+    outline: 2px solid var(--photocopy-black);
+    outline-offset: 4px;
+  }
+  :global(.card-gallery__frame-wrap) {
+    width: 260px;
+    height: 325px; /* 260 * 5/4 */
+    border: 1.5px solid var(--photocopy-black);
+    background: var(--photocopy-white);
+    overflow: hidden;
+    position: relative;
+    transition: border-width 0.12s ease;
+  }
+  :global(.card-gallery__item:hover .card-gallery__frame-wrap) {
+    border-width: 2.5px;
+  }
+  :global(.card-gallery__frame) {
+    width: 1080px;
+    height: 1350px;
+    border: 0;
+    display: block;
+    /* Scale the full-size card down to fit the 260-wide wrapper. */
+    transform: scale(calc(260 / 1080));
+    transform-origin: top left;
+    pointer-events: none; /* thumbnail is a button; iframe shouldn't steal clicks */
+  }
+  :global(.card-gallery__caption) {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 0 2px;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  :global(.card-gallery__short) {
+    padding: 2px 6px 3px;
+    background: var(--photocopy-black);
+    color: var(--photocopy-white);
+    letter-spacing: 0.14em;
+  }
+  :global(.card-gallery__label) {
+    font-family: var(--font-wordmark);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 14px;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--photocopy-black);
+  }
+
+  /* ============================================================
+     LIGHTBOX — centered, fit-to-viewport, no inner scrolling.
+     Card is scaled to whichever of `85vh` height / `90vw` width
+     is smaller (height-constrained on wide viewports, width-
+     constrained on narrow / portrait ones). Close button floats
+     top-right of the dialog; label + open-standalone sit in a
+     small footer under the card.
+     ============================================================ */
+  :global(.card-lightbox) {
+    /* --scale is a unitless number set by JS on open + on resize.
+       Default falls back to a reasonable mid-size so pre-JS the layout
+       isn't broken. */
+    --scale: 0.5;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    margin: auto;
+    inset: 0;
+    overflow: visible;
+    max-width: none;
+    max-height: none;
+  }
+  :global(.card-lightbox::backdrop) {
+    background: rgba(17, 17, 17, 0.82);
+    backdrop-filter: blur(2px);
+  }
+  :global(.card-lightbox[open]) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  :global(.card-lightbox__close) {
+    appearance: none;
+    position: absolute;
+    /* Float in the dimmed area above the card so it never overlaps the
+       card's own chrome. */
+    top: -46px;
+    right: 0;
+    background: transparent;
+    border: 1.5px solid var(--photocopy-white);
+    width: 34px;
+    height: 34px;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--photocopy-white);
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.12s ease, color 0.12s ease;
+  }
+  :global(.card-lightbox__close:hover) {
+    background: var(--photocopy-white);
+    color: var(--photocopy-black);
+  }
+
+  :global(.card-lightbox__viewport) {
+    width: calc(1080px * var(--scale));
+    height: calc(1350px * var(--scale));
+    overflow: hidden;
+    position: relative;
+    border: 1.5px solid var(--photocopy-white);
+  }
+  :global(.card-lightbox__frame) {
+    width: 1080px;
+    height: 1350px;
+    border: 0;
+    display: block;
+    transform: scale(var(--scale));
+    transform-origin: top left;
+  }
+
+  :global(.card-lightbox__meta) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    width: calc(1080px * var(--scale));
+    padding: 0 2px;
+    color: var(--photocopy-white);
+  }
+  :global(.card-lightbox__fig) {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  :global(.card-lightbox__fig em) {
+    font-family: var(--font-wordmark);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 15px;
+    letter-spacing: 0;
+    text-transform: none;
+    margin-left: 4px;
+  }
+  :global(.card-lightbox__action) {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--photocopy-white);
+    border-bottom: 1.5px solid var(--photocopy-white);
+    padding-bottom: 2px;
+  }
+  :global(.card-lightbox__action:hover) {
+    opacity: 0.7;
+  }
+
+  /* ---- Responsive ---- */
+  @media (max-width: 820px) {
+    .plate__body { grid-template-columns: 1fr; }
+    :global(.stats) { grid-template-columns: 1fr 1fr; }
+    .controls { flex-direction: column; align-items: flex-start; }
+    .controls__group--right { margin-left: 0; }
+    /* Shrink thumbnails and stack the gallery header vertically on tablet;
+       swipe scroll is natural here, so hide the nav arrows. */
+    .card-gallery__head { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .card-gallery__nav { display: none; }
+    :global(.card-gallery__item) { flex-basis: 220px; }
+    :global(.card-gallery__frame-wrap) { width: 220px; height: 275px; }
+    :global(.card-gallery__frame) { transform: scale(calc(220 / 1080)); }
+  }
+  @media (max-width: 480px) {
+    :global(.stats) { grid-template-columns: 1fr; }
+    :global(.card-gallery__item) { flex-basis: 200px; }
+    :global(.card-gallery__frame-wrap) { width: 200px; height: 250px; }
+    :global(.card-gallery__frame) { transform: scale(calc(200 / 1080)); }
+  }
+  /* On pointer-coarse devices (touch), suppress the nav arrows regardless
+     of width — swipe is the primary affordance. */
+  @media (pointer: coarse) {
+    .card-gallery__nav { display: none; }
+  }
+</style>

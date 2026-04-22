@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Atlas — Direction A: The Plate (Rougeux · Uberti · Bickford-Smith)</title>
+<link rel="stylesheet" href="../design-system/project/colors_and_type.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<style>
+  /* ============================================================
+     DIRECTION A — "THE PLATE"
+     Anchored in Rougeux (Byrne's Euclid chrome), Uberti & Cheshire
+     (Atlas of the Invisible framed plates), and Bickford-Smith
+     (strict system discipline, one motif per piece).
+
+     The big moves vs the current Atlas:
+     · A typographic cartouche top-left with `Fig. N — Title —
+       Source`, set in italic DM Serif Display + Atkinson small-caps
+     · A clean 1.5 px ink frame around the entire plate; no wobble
+       on the frame itself, wobble only between rows
+     · A stamped corner mark (compass rose) top-right — the Atlas's
+       Bickford-Smith motif; the same stamp would appear on every
+       Cartography plate, like a printer's device
+     · A classifying legend table (glyph | name | count | referent),
+       not a floating swatch row — Werner's Nomenclature grammar
+     · Explanatory prose set INSIDE the plate's right gutter — so the
+       paragraph and the map are one object, not page furniture
+     · Annotated callouts on the map: italic DM Serif labels on thin
+       hairline leader lines, Fragapane-lite (we borrow the leader-
+       line grammar; B commits to it fully)
+     ============================================================ */
+
+  html, body { margin: 0; padding: 0; background: var(--photocopy-white); color: var(--photocopy-black); overflow-x: hidden; }
+
+  /* Speckle (re-used from home mockup) */
+  body::before {
+    content: "";
+    position: fixed; inset: 0; pointer-events: none; z-index: 200;
+    background-image: url("../assets/speckle-dark.svg");
+    background-repeat: repeat;
+    opacity: 0.85;
+    mix-blend-mode: multiply;
+  }
+  body::after {
+    content: "";
+    position: fixed; inset: 0; pointer-events: none; z-index: 201;
+    background-image: url("../assets/speckle-light.svg");
+    background-repeat: repeat;
+    opacity: 0.65;
+    mix-blend-mode: screen;
+  }
+
+  /* ---- Direction label (top banner, not part of the design — just
+     makes comparison obvious when you have three tabs open). ---- */
+  .direction-label {
+    position: fixed; top: 10px; left: 10px; z-index: 300;
+    background: var(--photocopy-black); color: var(--paper-blue);
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 6px 10px; border: 1.5px solid var(--paper-blue);
+  }
+
+  /* ---- Masthead (simplified, ink with desk-blue text) ---- */
+  .mast {
+    background: var(--photocopy-black); padding: 28px 40px 22px;
+    position: relative; z-index: 1; text-align: center;
+  }
+  .mast__wm {
+    font-family: var(--font-wordmark); font-weight: 400;
+    font-size: clamp(40px, 7vw, 88px); line-height: 0.95;
+    letter-spacing: -0.02em; color: var(--paper-blue);
+    display: inline-block; white-space: nowrap;
+  }
+  .mast__wm em { font-style: italic; margin-left: 0.18em; }
+  .mast__rule { border-top: 6px double var(--paper-blue); margin-top: 14px; }
+
+  /* ---- Page container ---- */
+  .page { max-width: 1100px; margin: 0 auto; padding: 48px 40px 80px; }
+
+  /* ---- Article header ---- */
+  .ah { max-width: 48ch; margin: 0 auto 40px; }
+  .ah__kicker {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    display: flex; gap: 12px; align-items: center; margin-bottom: 18px;
+  }
+  .ah__swatch {
+    width: 12px; height: 12px; display: inline-block;
+    background: var(--paper-blue); border: 1.5px solid var(--photocopy-black);
+  }
+  .ah__headline {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: clamp(36px, 4.8vw, 56px); line-height: 1;
+    letter-spacing: -0.02em; margin: 0 0 14px; text-wrap: balance;
+  }
+  .hl {
+    background: var(--photocopy-black); color: var(--photocopy-white);
+    padding: 0 0.18em 0.08em;
+    box-decoration-break: clone; -webkit-box-decoration-break: clone;
+    filter: url(#ink-jitter);
+  }
+  .ah__stand {
+    font-family: var(--font-wordmark); font-style: italic; font-weight: 400;
+    font-size: 19px; line-height: 1.4; margin: 0 0 16px;
+  }
+  .ah__meta {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .ah__meta em {
+    font-family: var(--font-wordmark); font-style: italic; font-weight: 400;
+    font-size: 13px; letter-spacing: 0; text-transform: none;
+  }
+  .ah__meta .dot { opacity: 0.45; }
+
+  /* ============================================================
+     THE PLATE — this is where Direction A happens.
+     ============================================================ */
+  .plate {
+    position: relative;
+    border: 1.5px solid var(--photocopy-black);
+    background: var(--photocopy-white);
+    padding: 28px 30px 26px;
+    margin: 24px 0 40px;
+  }
+
+  /* Cartouche — top-left corner overhang, set over the frame edge
+     so it reads as a stamped label on the plate, not an internal
+     banner. */
+  .plate__cartouche {
+    position: absolute;
+    top: -1.5px; left: 24px;
+    background: var(--photocopy-white);
+    padding: 0 12px 0 8px;
+    transform: translateY(-52%);
+    display: flex; align-items: baseline; gap: 10px;
+  }
+  .plate__fig {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--photocopy-black);
+    border-right: 1.5px solid var(--photocopy-black);
+    padding-right: 10px;
+  }
+  .plate__title {
+    font-family: var(--font-wordmark); font-style: italic; font-weight: 400;
+    font-size: 16px; letter-spacing: -0.01em; color: var(--photocopy-black);
+  }
+
+  /* Printer's mark — Bickford-Smith motif in the top-right. One
+     compass rose, the same on every Cartography plate. */
+  .plate__mark {
+    position: absolute;
+    top: -1.5px; right: 24px;
+    background: var(--photocopy-white);
+    padding: 6px 10px;
+    transform: translateY(-45%);
+  }
+  .plate__mark svg { display: block; width: 24px; height: 24px; }
+
+  /* ---- Plate body: two columns (map + prose) ---- */
+  .plate__body {
+    display: grid;
+    grid-template-columns: 2.15fr 1fr;
+    gap: 28px;
+    margin-top: 10px;
+  }
+  .plate__mapwrap {
+    position: relative;
+    background: var(--paper-blue);
+    border: 1.5px solid var(--photocopy-black);
+    overflow: hidden;
+  }
+  .plate__mapwrap svg { display: block; width: 100%; height: auto; }
+  .country { fill: var(--photocopy-white); stroke: var(--photocopy-black); stroke-width: 0.4; }
+  .country--anchor { fill: var(--photocopy-black); stroke: var(--paper-blue); stroke-width: 0.8; }
+  .country--treaty { fill: var(--paper-green); }
+  .country--reluctant { fill: var(--paper-yellow); }
+
+  /* Hand-drawn annotation layer — italic DM Serif labels on hairline
+     leader lines. Absolute-positioned to known country bboxes for
+     this prototype. In production these would live in a piece-level
+     `annotations` array + a helper that projects lat/lng → pixels. */
+  .annot {
+    position: absolute;
+    font-family: var(--font-wordmark); font-style: italic; font-weight: 400;
+    font-size: 12px; line-height: 1.25; color: var(--photocopy-black);
+    max-width: 18ch; pointer-events: none;
+  }
+  .annot::before {
+    content: ""; position: absolute;
+    background: var(--photocopy-black);
+    height: 1px;
+    filter: url(#ink-jitter);
+  }
+  /* Russia callout */
+  .annot--ru { top: 14%; right: 4%; text-align: right; max-width: 14ch; }
+  .annot--ru::before { right: -28px; top: 50%; width: 24px; }
+  /* UAE callout */
+  .annot--ae { top: 52%; right: 22%; text-align: left; max-width: 15ch; }
+  .annot--ae::before { left: -24px; top: 60%; width: 20px; }
+  /* Cuba callout */
+  .annot--cu { top: 44%; left: 16%; text-align: left; max-width: 14ch; }
+  .annot--cu::before { left: -20px; top: 50%; width: 18px; }
+
+  /* ---- Plate prose column ---- */
+  .plate__prose {
+    font-family: var(--font-body); font-size: 14px; line-height: 1.55;
+  }
+  .plate__prose p { margin: 0 0 12px; }
+  .plate__prose p:first-of-type::first-letter {
+    font-family: var(--font-display); font-weight: 800;
+    float: left; font-size: 3.6em; line-height: 0.82;
+    padding: 4px 8px 0 0;
+  }
+  .plate__prose strong {
+    font-family: var(--font-display); font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- Classifying legend — Werner's Nomenclature grammar ---- */
+  .plate__legend {
+    border-top: 1.5px solid var(--photocopy-black);
+    margin-top: 22px;
+    padding-top: 18px;
+  }
+  .plate__legend-title {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    margin: 0 0 12px; color: var(--fg-muted);
+  }
+  .plate__legend-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .plate__legend-table td {
+    padding: 6px 10px 6px 0;
+    vertical-align: middle;
+    border-bottom: 1px dotted var(--border);
+  }
+  .plate__legend-table tr:last-child td { border-bottom: 0; }
+  .legend__sw {
+    display: inline-block; width: 18px; height: 18px;
+    border: 1.5px solid var(--photocopy-black);
+    vertical-align: middle;
+  }
+  .legend__name {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  }
+  .legend__count {
+    font-family: var(--font-mono); font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+    text-align: right;
+    padding-right: 18px;
+  }
+  .legend__referent {
+    font-family: var(--font-wordmark); font-style: italic;
+    font-size: 13px;
+    color: var(--fg-muted);
+  }
+
+  /* ---- Source line (bottom of plate) ---- */
+  .plate__source {
+    font-family: var(--font-body); font-style: italic;
+    font-size: 12px; line-height: 1.45; color: var(--fg-muted);
+    margin: 18px 0 0; padding-top: 14px;
+    border-top: 1.5px solid var(--photocopy-black);
+    max-width: 72ch;
+  }
+
+  /* ---- Footer (simplified) ---- */
+  .foot {
+    background: var(--photocopy-black); color: var(--paper-blue);
+    padding: 40px 40px 28px; margin-top: 20px;
+    text-align: center;
+  }
+  .foot__wm {
+    font-family: var(--font-wordmark); font-style: italic;
+    font-size: 22px; color: var(--paper-blue);
+  }
+  .foot__line {
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.1em; margin-top: 8px;
+    color: var(--paper-blue); opacity: 0.8;
+  }
+
+  @media (max-width: 820px) {
+    .plate__body { grid-template-columns: 1fr; }
+    .annot { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="direction-label">Direction A · The Plate</div>
+
+<!-- SVG defs for ink-jitter + compass rose -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="ink-jitter" x="-2%" y="-15%" width="104%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="2" seed="3" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="1.4"/>
+    </filter>
+    <!-- Engraved compass rose — Bickford-Smith-style printer's mark -->
+    <symbol id="compass-rose" viewBox="0 0 24 24">
+      <g stroke="#111111" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="11"/>
+        <circle cx="12" cy="12" r="7.5"/>
+        <path d="M12 1 L13.8 12 L12 23 L10.2 12 Z" fill="#111111"/>
+        <path d="M1 12 L12 10.2 L23 12 L12 13.8 Z"/>
+        <path d="M4.2 4.2 L12 11 L19.8 4.2 L13 9.3 Z" fill="#111111"/>
+        <path d="M4.2 19.8 L12 13 L19.8 19.8 L13 14.7 Z"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="mast">
+  <div class="mast__wm">Inkwell<em>Review</em></div>
+  <div class="mast__rule"></div>
+</header>
+
+<main class="page">
+
+  <section class="ah">
+    <div class="ah__kicker">
+      <span class="ah__swatch"></span>
+      <span>Data · Cartography · Issue 01</span>
+    </div>
+    <h1 class="ah__headline">
+      The <span class="hl">78 countries</span> that will not send you home.
+    </h1>
+    <p class="ah__stand">
+      Every extradition treaty on Earth, mapped. Select an anchor — and the network re-centres on it.
+    </p>
+    <div class="ah__meta">
+      <span>By <em>Ollie Inkwell</em></span><span class="dot">·</span>
+      <span>19 April 2026</span><span class="dot">·</span>
+      <span>12 min read</span><span class="dot">·</span>
+      <span>Interactive map</span>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       THE PLATE
+       ============================================================ -->
+  <section class="plate">
+
+    <div class="plate__cartouche">
+      <span class="plate__fig">Fig. I</span>
+      <span class="plate__title">The Extradition Atlas — anchored on the United States</span>
+    </div>
+
+    <div class="plate__mark" aria-hidden="true">
+      <svg><use href="#compass-rose"/></svg>
+    </div>
+
+    <div class="plate__body">
+
+      <div class="plate__mapwrap">
+        <svg viewBox="40 30 880 420" preserveAspectRatio="xMidYMid meet" id="mapA"></svg>
+
+        <!-- Fragapane-lite annotations: hairline leader + italic label -->
+        <div class="annot annot--ru">
+          <em>Russia —</em> no treaty, the archetypal haven.
+        </div>
+        <div class="annot annot--ae">
+          <em>UAE —</em> selective enforcement despite a 2008 bilateral.
+        </div>
+        <div class="annot annot--cu">
+          <em>Cuba —</em> reluctant since 1926.
+        </div>
+      </div>
+
+      <div class="plate__prose">
+        <p>Extradition is the quiet infrastructure of cross-border enforcement. A treaty obliges one state to surrender a wanted person to another; without one, the receiving state is under no duty to help.</p>
+        <p>The United States has bilateral treaties with <strong>117</strong> countries. That leaves <strong>78</strong> where no such obligation exists — the map is thinnest where the headlines are loudest.</p>
+      </div>
+
+    </div>
+
+    <div class="plate__legend">
+      <h3 class="plate__legend-title">Classifying key</h3>
+      <table class="plate__legend-table">
+        <tr>
+          <td><span class="legend__sw" style="background:var(--photocopy-black)"></span></td>
+          <td class="legend__name">Anchor</td>
+          <td class="legend__count">1</td>
+          <td class="legend__referent">The inquiring state.</td>
+        </tr>
+        <tr>
+          <td><span class="legend__sw" style="background:var(--paper-green)"></span></td>
+          <td class="legend__name">Treaty in force</td>
+          <td class="legend__count">117</td>
+          <td class="legend__referent">Bilateral or multilateral obligation recognised.</td>
+        </tr>
+        <tr>
+          <td><span class="legend__sw" style="background:var(--paper-yellow)"></span></td>
+          <td class="legend__name">Reluctant</td>
+          <td class="legend__count">10</td>
+          <td class="legend__referent">Treaty exists; rarely honoured in practice.</td>
+        </tr>
+        <tr>
+          <td><span class="legend__sw" style="background:var(--photocopy-white)"></span></td>
+          <td class="legend__name">No treaty</td>
+          <td class="legend__count">78</td>
+          <td class="legend__referent">No obligation. Cooperation is ad-hoc or absent.</td>
+        </tr>
+      </table>
+    </div>
+
+    <p class="plate__source">
+      Source: US Department of State (18 U.S.C. § 3181); Wikipedia extradition treaty compilation; Eurojust EAW guidance. Status for smaller states inferred from legacy instruments. For illustration, not legal advice.
+    </p>
+
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="foot__wm">Inkwell Review</div>
+  <div class="foot__line">inkwellreview.com · twice weekly</div>
+</footer>
+
+<script>
+const svg = d3.select("#mapA");
+const width = 960, height = 500;
+const projection = d3.geoNaturalEarth1().scale(175).translate([width/2, height/2 + 20]);
+const path = d3.geoPath(projection);
+
+// US treaty partners — subset, ISO numeric. Same set the Atlas uses.
+const TREATY = new Set(["008","028","032","036","040","044","052","056","084","068","070","076","100","124","152","170","178","188","191","192","196","203","208","212","214","218","818","222","233","748","242","246","250","270","276","288","300","308","320","328","332","340","344","348","352","356","368","372","376","380","388","392","400","404","296","383","428","426","430","438","440","442","454","458","470","584","480","484","583","492","499","104","520","528","554","558","566","807","578","586","585","591","598","600","604","608","616","620","642","659","662","670","674","688","690","694","702","703","705","710","410","724","144","740","752","756","834","764","776","780","792","798","826","858","862","894","716"]);
+const RELUCTANT = new Set(["192","068","218","818","352","558","586","756","862","716"]);
+
+d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json").then(world => {
+  const countries = topojson.feature(world, world.objects.countries).features;
+  svg.append("g").selectAll("path").data(countries).join("path")
+    .attr("d", path)
+    .attr("class", d => {
+      const id = String(d.id).padStart(3,"0");
+      if (id === "840") return "country country--anchor";
+      if (RELUCTANT.has(id)) return "country country--reluctant";
+      if (TREATY.has(id)) return "country country--treaty";
+      return "country";
+    });
+});
+</script>
+</body>
+</html>

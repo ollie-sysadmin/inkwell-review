@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Extradition Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=JetBrains+Mono:wght@400;500&family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1419;
+    --bg-2: #161c23;
+    --ink: #f4ede4;
+    --ink-dim: #a8a096;
+    --ink-faint: #5a5448;
+    --amber: #e8a33d;
+    --amber-glow: #f4b954;
+    --rust: #c45a3a;
+    --sage: #7a9b6a;
+    --steel: #3a4550;
+    --line: #2a323c;
+    --ocean: #0a0e12;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 400;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body {
+    background:
+      radial-gradient(ellipse at top left, rgba(232, 163, 61, 0.04), transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(196, 90, 58, 0.03), transparent 50%),
+      var(--bg);
+  }
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 40px 80px;
+  }
+  header {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 28px;
+    margin-bottom: 32px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 40px;
+    align-items: end;
+  }
+  .masthead-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: clamp(36px, 5vw, 64px);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+  }
+  h1 em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--amber);
+  }
+  .deck {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--ink-dim);
+    max-width: 40ch;
+  }
+  .byline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: right;
+    line-height: 1.6;
+  }
+  .byline .accent { color: var(--ink-dim); }
+
+  .controls {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+  }
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .control-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .anchor-chips {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .chip {
+    background: transparent;
+    border: 1px solid var(--steel);
+    color: var(--ink-dim);
+    padding: 6px 12px;
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 2px;
+  }
+  .chip:hover {
+    color: var(--ink);
+    border-color: var(--amber);
+  }
+  .chip.active {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: var(--bg);
+    font-weight: 600;
+  }
+
+  .toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .toggle-switch {
+    width: 36px;
+    height: 20px;
+    background: var(--steel);
+    border-radius: 10px;
+    position: relative;
+    transition: background 0.2s;
+  }
+  .toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background: var(--ink);
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .toggle.active .toggle-switch {
+    background: var(--rust);
+  }
+  .toggle.active .toggle-switch::after {
+    transform: translateX(16px);
+  }
+  .toggle-label {
+    font-size: 13px;
+    color: var(--ink-dim);
+  }
+  .toggle.active .toggle-label {
+    color: var(--ink);
+  }
+
+  .map-wrap {
+    position: relative;
+    background: var(--ocean);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .map-wrap svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    cursor: grab;
+  }
+  .country {
+    fill: #1e2a36;
+    stroke: var(--ocean);
+    stroke-width: 0.4;
+    transition: fill 0.25s ease;
+    cursor: pointer;
+  }
+  .country:hover {
+    stroke: var(--ink);
+    stroke-width: 0.8;
+  }
+  .country.treaty { fill: var(--sage); }
+  .country.reluctant { fill: var(--amber); }
+  .country.no-treaty { fill: #2a1f1a; }
+  .country.haven { fill: var(--rust); }
+  .country.anchor {
+    fill: var(--ink);
+    stroke: var(--amber);
+    stroke-width: 1.2;
+  }
+  .country.eu-bloc { fill: var(--sage); }
+
+  .tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: rgba(15, 20, 25, 0.96);
+    border: 1px solid var(--amber);
+    padding: 10px 14px;
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    border-radius: 2px;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 10;
+    max-width: 260px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  }
+  .tooltip .tt-name {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .tooltip .tt-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 6px;
+  }
+  .tooltip .tt-note {
+    font-size: 12px;
+    color: var(--ink-dim);
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  .legend {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    padding: 16px 20px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+  .legend-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .stats-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-top: 24px;
+  }
+  .stat {
+    background: var(--bg-2);
+    padding: 20px 24px;
+  }
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-family: 'Fraunces', serif;
+    font-size: 36px;
+    font-weight: 300;
+    color: var(--ink);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-value .unit {
+    font-size: 14px;
+    color: var(--ink-dim);
+    margin-left: 4px;
+  }
+  .stat-note {
+    font-size: 11px;
+    color: var(--ink-dim);
+    font-style: italic;
+  }
+
+  .footnote {
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--ink-faint);
+    line-height: 1.6;
+    max-width: 70ch;
+  }
+  .footnote strong { color: var(--ink-dim); font-weight: 500; }
+
+  @media (max-width: 768px) {
+    .container { padding: 20px 16px 40px; }
+    header { grid-template-columns: 1fr; gap: 16px; }
+    .byline { text-align: left; }
+    .stats-strip { grid-template-columns: repeat(2, 1fr); }
+    .controls { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div></div>
+    <div>
+      <div class="masthead-tag">THE EXTRADITION ATLAS · VOL. I</div>
+      <h1>Where the <em>Long Arm</em> Reaches</h1>
+    </div>
+    <div class="byline">
+      <div class="accent">INTERACTIVE</div>
+      <div>DATA · TREATY STATUS</div>
+      <div>AS OF 2026</div>
+    </div>
+  </header>
+
+  <p class="deck" style="margin-bottom: 28px; max-width: 60ch;">
+    Extradition law is the thin thread that lets one state reach across borders to pull a fugitive home. The network is full of holes. Select a country to see who it can&mdash;and can't&mdash;call on.
+  </p>
+
+  <div class="controls">
+    <div class="control-group">
+      <span class="control-label">Anchor</span>
+      <div class="anchor-chips" id="chips"></div>
+    </div>
+    <div class="control-group" style="margin-left: auto;">
+      <div class="toggle" id="havensToggle">
+        <div class="toggle-switch"></div>
+        <span class="toggle-label">Highlight fugitive havens</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="map-wrap" id="mapWrap">
+    <div class="tooltip" id="tooltip"></div>
+    <svg id="map" viewBox="0 0 960 500"></svg>
+  </div>
+
+  <div class="legend" id="legend"></div>
+
+  <div class="stats-strip" id="stats"></div>
+
+  <div class="footnote">
+    <strong>Notes &amp; caveats.</strong>
+    "Treaty" means a bilateral extradition agreement in force, or coverage under a multilateral framework (e.g. the European Arrest Warrant for EU members; the UK&ndash;EU Trade and Cooperation Agreement post-Brexit). "Reluctant" flags countries that have a treaty on paper but have refused or consistently obstructed extradition in practice. "No treaty" does not mean extradition is impossible&mdash;some states cooperate on an ad-hoc reciprocity basis&mdash;but it removes the legal obligation. Data is synthesised from the US State Department list (18 U.S.C. § 3181), Wikipedia's extradition treaty compilations, and Eurojust / NCA guidance on the EAW and TCA. Treaty status for some smaller states (particularly former British colonies covered by historic 1931/1935 agreements) is inferred from legacy instruments and may have been superseded by domestic law. This tool is for illustration, not legal advice.
+  </div>
+</div>
+
+<script>
+// ============================================================
+// TREATY DATA
+// ============================================================
+// Country codes use ISO 3166-1 numeric (matching world-atlas topojson)
+// Source: US State Department list + well-known bilateral relationships
+// ============================================================
+
+// US extradition treaty partners (ISO numeric codes)
+// From Wikipedia: 116 countries. Croatia 2022 most recent.
+const US_TREATY_PARTNERS = new Set([
+  "008", // Albania
+  "028", // Antigua and Barbuda
+  "032", // Argentina
+  "036", // Australia
+  "040", // Austria
+  "044", // Bahamas
+  "052", // Barbados
+  "056", // Belgium
+  "084", // Belize
+  "068", // Bolivia
+  "070", // Bosnia and Herzegovina
+  "076", // Brazil
+  "100", // Bulgaria
+  "124", // Canada
+  "152", // Chile
+  "170", // Colombia
+  "178", // Congo (Republic)
+  "188", // Costa Rica
+  "191", // Croatia
+  "192", // Cuba
+  "196", // Cyprus
+  "203", // Czech Republic
+  "208", // Denmark
+  "212", // Dominica
+  "214", // Dominican Republic
+  "218", // Ecuador
+  "818", // Egypt
+  "222", // El Salvador
+  "233", // Estonia
+  "748", // Eswatini
+  "242", // Fiji
+  "246", // Finland
+  "250", // France
+  "270", // Gambia
+  "276", // Germany
+  "288", // Ghana
+  "300", // Greece
+  "308", // Grenada
+  "320", // Guatemala
+  "328", // Guyana
+  "332", // Haiti
+  "340", // Honduras
+  "344", // Hong Kong (suspended 2020) - we'll treat as suspended
+  "348", // Hungary
+  "352", // Iceland
+  "356", // India
+  "368", // Iraq
+  "372", // Ireland
+  "376", // Israel
+  "380", // Italy
+  "388", // Jamaica
+  "392", // Japan
+  "400", // Jordan
+  "404", // Kenya
+  "296", // Kiribati
+  "383", // Kosovo (not ISO standard - handle separately)
+  "428", // Latvia
+  "426", // Lesotho
+  "430", // Liberia
+  "438", // Liechtenstein
+  "440", // Lithuania
+  "442", // Luxembourg
+  "454", // Malawi
+  "458", // Malaysia
+  "470", // Malta
+  "584", // Marshall Islands
+  "480", // Mauritius
+  "484", // Mexico
+  "583", // Micronesia
+  "492", // Monaco
+  "499", // Montenegro
+  "104", // Myanmar
+  "520", // Nauru
+  "528", // Netherlands
+  "554", // New Zealand
+  "558", // Nicaragua
+  "566", // Nigeria
+  "807", // North Macedonia
+  "578", // Norway
+  "586", // Pakistan
+  "585", // Palau
+  "591", // Panama
+  "598", // Papua New Guinea
+  "600", // Paraguay
+  "604", // Peru
+  "608", // Philippines
+  "616", // Poland
+  "620", // Portugal
+  "642", // Romania
+  "659", // Saint Kitts and Nevis
+  "662", // Saint Lucia
+  "670", // Saint Vincent
+  "674", // San Marino
+  "688", // Serbia
+  "690", // Seychelles
+  "694", // Sierra Leone
+  "702", // Singapore
+  "703", // Slovakia
+  "705", // Slovenia
+  "710", // South Africa
+  "410", // South Korea
+  "724", // Spain
+  "144", // Sri Lanka
+  "740", // Suriname
+  "752", // Sweden
+  "756", // Switzerland
+  "834", // Tanzania
+  "764", // Thailand
+  "776", // Tonga
+  "780", // Trinidad and Tobago
+  "792", // Turkey
+  "798", // Tuvalu
+  "826", // United Kingdom
+  "858", // Uruguay
+  "862", // Venezuela
+  "894", // Zambia
+  "716"  // Zimbabwe
+]);
+
+// US treaty partners known to refuse or obstruct extradition
+const US_RELUCTANT = new Set([
+  "192", // Cuba
+  "068", // Bolivia
+  "218", // Ecuador
+  "818", // Egypt
+  "352", // Iceland
+  "558", // Nicaragua
+  "586", // Pakistan
+  "756", // Switzerland (extradites EU nationals readily, but restrictive with US)
+  "862", // Venezuela
+  "716"  // Zimbabwe
+]);
+
+// Hong Kong suspended 2020
+const US_SUSPENDED = new Set(["344"]);
+
+// Notorious non-extradition havens (commonly cited destinations for fugitives from Western states)
+const FUGITIVE_HAVENS = new Set([
+  "643", // Russia
+  "156", // China
+  "364", // Iran
+  "408", // North Korea
+  "704", // Vietnam
+  "398", // Kazakhstan
+  "496", // Mongolia
+  "158", // Taiwan
+  "784", // UAE (improving but historically haven)
+  "682", // Saudi Arabia
+  "634", // Qatar
+  "414", // Kuwait
+  "048", // Bahrain
+  "512", // Oman
+  "887", // Yemen
+  "499", // Montenegro (historically)
+  "020", // Andorra
+  "028", // (Antigua - has US treaty but famous for financial fugitives)
+  "732", // Western Sahara / Morocco region - Morocco has no US treaty
+  "504", // Morocco
+  "148", // Chad
+  "140", // CAR
+  "180", // DRC
+  "231", // Ethiopia
+  "262", // Djibouti
+  "706", // Somalia
+  "096", // Brunei
+  "116", // Cambodia
+  "418", // Laos
+  "050", // Bangladesh
+  "524", // Nepal
+  "064", // Bhutan
+  "462", // Maldives
+  "004", // Afghanistan
+]);
+
+// EU member states (all covered by European Arrest Warrant)
+const EU_MEMBERS = new Set([
+  "040","056","100","191","196","203","208","233","246","250","276","300",
+  "348","372","380","428","440","442","470","528","616","620","642","703",
+  "705","724","752"
+]);
+
+// UK treaty partners (Category 1: EU via TCA; Category 2: bilateral treaties)
+// UK has extradition arrangements with: all EU states (TCA), US, Australia, Canada, NZ,
+// and Commonwealth/historic treaty partners. This is a curated well-known list.
+const UK_TREATY_PARTNERS = new Set([
+  ...EU_MEMBERS,
+  "840", // US
+  "036", // Australia
+  "124", // Canada
+  "554", // New Zealand
+  "710", // South Africa
+  "356", // India
+  "376", // Israel
+  "392", // Japan
+  "410", // South Korea
+  "484", // Mexico
+  "032", // Argentina
+  "076", // Brazil
+  "152", // Chile
+  "604", // Peru
+  "858", // Uruguay
+  "170", // Colombia
+  "188", // Costa Rica
+  "320", // Guatemala
+  "191", // Croatia
+  "578", // Norway
+  "352", // Iceland
+  "756", // Switzerland
+  "438", // Liechtenstein
+  "492", // Monaco
+  "674", // San Marino
+  "336", // Vatican (Holy See)
+  "807", // North Macedonia
+  "008", // Albania
+  "688", // Serbia
+  "070", // Bosnia
+  "499", // Montenegro
+  "792", // Turkey
+  "818", // Egypt
+  "400", // Jordan
+  "368", // Iraq
+  "404", // Kenya
+  "834", // Tanzania
+  "800", // Uganda
+  "454", // Malawi
+  "894", // Zambia
+  "716", // Zimbabwe
+  "566", // Nigeria
+  "288", // Ghana
+  "694", // Sierra Leone
+  "270", // Gambia
+  "430", // Liberia
+  "458", // Malaysia
+  "702", // Singapore
+  "764", // Thailand
+  "608", // Philippines
+  "144", // Sri Lanka
+  "586", // Pakistan
+  "050", // Bangladesh
+  "524", // Nepal
+  "480", // Mauritius
+  "690", // Seychelles
+  "242", // Fiji
+  "776", // Tonga
+  "520", // Nauru
+  "296", // Kiribati
+  "798", // Tuvalu
+  "090", // Solomon Islands
+  "548", // Vanuatu
+  "785", // Western Sahara (n/a)
+  "780", // Trinidad
+  "388", // Jamaica
+  "044", // Bahamas
+  "052", // Barbados
+  "084", // Belize
+  "212", // Dominica
+  "308", // Grenada
+  "328", // Guyana
+  "659", // St Kitts
+  "662", // St Lucia
+  "670", // St Vincent
+  "028", // Antigua
+]);
+
+// Australia treaty partners (well-known list; Extradition Act 1988 regulations)
+const AU_TREATY_PARTNERS = new Set([
+  ...EU_MEMBERS,
+  "826", // UK
+  "840", // US
+  "124", // Canada
+  "554", // NZ
+  "392", // Japan
+  "410", // South Korea
+  "458", // Malaysia
+  "702", // Singapore
+  "360", // Indonesia (yes - AU has treaty with Indonesia)
+  "704", // Vietnam (AU has treaty - rare case)
+  "608", // Philippines
+  "764", // Thailand
+  "156", // China (AU has treaty but Parliament never ratified; treated as no)
+  "344", // Hong Kong (suspended)
+  "356", // India
+  "376", // Israel
+  "710", // South Africa
+  "484", // Mexico
+  "076", // Brazil
+  "032", // Argentina
+  "152", // Chile
+  "858", // Uruguay
+  "792", // Turkey
+  "818", // Egypt
+  "578", // Norway
+  "352", // Iceland
+  "756", // Switzerland
+  "008", // Albania
+  "688", // Serbia
+  "807", // North Macedonia
+  "586", // Pakistan
+  "144", // Sri Lanka
+  "242", // Fiji
+  "598", // PNG
+  "090", // Solomons
+  "548", // Vanuatu
+  "776", // Tonga
+]);
+// AU had a treaty with China signed but never ratified - mark as reluctant
+const AU_RELUCTANT = new Set(["156"]);
+
+// Canada treaty partners (Extradition Act; listed in Schedule)
+const CA_TREATY_PARTNERS = new Set([
+  ...EU_MEMBERS,
+  "840", // US
+  "826", // UK
+  "036", // Australia
+  "554", // NZ
+  "392", // Japan
+  "410", // South Korea
+  "376", // Israel
+  "484", // Mexico
+  "032", // Argentina
+  "076", // Brazil
+  "152", // Chile
+  "170", // Colombia
+  "858", // Uruguay
+  "356", // India
+  "458", // Malaysia
+  "608", // Philippines
+  "764", // Thailand
+  "710", // South Africa
+  "356", // India
+  "578", // Norway
+  "352", // Iceland
+  "756", // Switzerland
+  "792", // Turkey
+  "818", // Egypt
+  "404", // Kenya
+  "388", // Jamaica
+  "044", // Bahamas
+  "052", // Barbados
+  "780", // Trinidad
+  "328", // Guyana
+  "780", // Trinidad
+  "144", // Sri Lanka
+  "242", // Fiji
+  "598", // PNG
+  "480", // Mauritius
+  "690", // Seychelles
+  "800", // Uganda
+  "834", // Tanzania
+  "894", // Zambia
+  "716", // Zimbabwe
+  "566", // Nigeria
+  "288", // Ghana
+]);
+
+// Russia treaty partners (CIS convention + select bilateral)
+const RU_TREATY_PARTNERS = new Set([
+  "051", // Armenia
+  "031", // Azerbaijan
+  "112", // Belarus
+  "398", // Kazakhstan
+  "417", // Kyrgyzstan
+  "498", // Moldova
+  "762", // Tajikistan
+  "795", // Turkmenistan
+  "804", // Ukraine (suspended de facto due to war)
+  "860", // Uzbekistan
+  "268", // Georgia (complicated, often excluded)
+  "156", // China
+  "408", // North Korea
+  "496", // Mongolia
+  "364", // Iran
+  "704", // Vietnam
+  "116", // Cambodia
+  "418", // Laos
+  "356", // India
+  "192", // Cuba
+  "214", // Dominican Republic
+  "032", // Argentina
+  "076", // Brazil
+  "818", // Egypt
+  "368", // Iraq
+  "887", // Yemen
+  "504", // Morocco
+  "324", // Guinea
+  "566", // Nigeria
+  "716", // Zimbabwe
+  "360", // Indonesia
+  "484", // Mexico
+  "604", // Peru
+  "170", // Colombia
+  "410", // South Korea
+  "100", // Bulgaria (legacy)
+  "616", // Poland (legacy - now via EU, complicated)
+  "348", // Hungary
+  "203", // Czech Republic
+  "703", // Slovakia
+  "300", // Greece
+  "196", // Cyprus
+  "724", // Spain
+  "380", // Italy
+  "124", // Canada (no - remove... actually Russia-Canada no treaty)
+  "008", // Albania
+  "688", // Serbia
+  "070", // Bosnia
+  "807", // North Macedonia
+  "499", // Montenegro
+  "191", // Croatia
+  "705", // Slovenia
+  "642", // Romania
+  "233", // Estonia
+  "428", // Latvia
+  "440", // Lithuania
+  "246", // Finland
+]);
+// Remove the Canada error above
+RU_TREATY_PARTNERS.delete("124");
+
+// China treaty partners (~60 bilateral treaties, notably NOT US/UK/Canada/AU)
+const CN_TREATY_PARTNERS = new Set([
+  "764", // Thailand (first, 1993)
+  "112", // Belarus
+  "643", // Russia
+  "398", // Kazakhstan
+  "417", // Kyrgyzstan
+  "762", // Tajikistan
+  "860", // Uzbekistan
+  "795", // Turkmenistan
+  "496", // Mongolia
+  "408", // North Korea
+  "704", // Vietnam
+  "418", // Laos
+  "116", // Cambodia
+  "104", // Myanmar
+  "050", // Bangladesh
+  "064", // Bhutan
+  "524", // Nepal
+  "586", // Pakistan
+  "144", // Sri Lanka
+  "364", // Iran
+  "792", // Turkey
+  "051", // Armenia
+  "031", // Azerbaijan
+  "498", // Moldova
+  "804", // Ukraine
+  "268", // Georgia
+  "100", // Bulgaria
+  "642", // Romania
+  "616", // Poland
+  "348", // Hungary
+  "300", // Greece
+  "196", // Cyprus
+  "620", // Portugal
+  "724", // Spain
+  "380", // Italy
+  "250", // France
+  "056", // Belgium
+  "528", // Netherlands
+  "724", // Spain
+  "724", // Spain
+  "008", // Albania
+  "688", // Serbia
+  "070", // Bosnia
+  "807", // North Macedonia
+  "032", // Argentina
+  "076", // Brazil
+  "152", // Chile
+  "170", // Colombia
+  "604", // Peru
+  "484", // Mexico
+  "818", // Egypt
+  "710", // South Africa
+  "404", // Kenya
+  "566", // Nigeria
+  "800", // Uganda
+  "231", // Ethiopia
+  "012", // Algeria
+  "716", // Zimbabwe
+  "894", // Zambia
+  "454", // Malawi
+  "508", // Mozambique
+  "024", // Angola
+  "784", // UAE
+  "036", // Australia (signed not ratified - reluctant)
+  "620", // Portugal
+  "620", // (dup)
+]);
+const CN_RELUCTANT = new Set(["036"]); // AU-China treaty signed but not ratified
+
+// UAE treaty partners (growing network; GCC multilateral + bilateral)
+const AE_TREATY_PARTNERS = new Set([
+  "048", // Bahrain
+  "414", // Kuwait
+  "512", // Oman
+  "634", // Qatar
+  "682", // Saudi Arabia
+  "887", // Yemen
+  "818", // Egypt
+  "400", // Jordan
+  "422", // Lebanon
+  "760", // Syria
+  "504", // Morocco
+  "788", // Tunisia
+  "012", // Algeria
+  "368", // Iraq
+  "729", // Sudan
+  "706", // Somalia
+  "262", // Djibouti
+  "174", // Comoros
+  "364", // Iran
+  "792", // Turkey
+  "356", // India (2000)
+  "586", // Pakistan (2004)
+  "050", // Bangladesh
+  "144", // Sri Lanka
+  "104", // Myanmar
+  "764", // Thailand
+  "458", // Malaysia
+  "702", // Singapore
+  "608", // Philippines
+  "360", // Indonesia
+  "156", // China
+  "410", // South Korea
+  "392", // Japan
+  "076", // Brazil
+  "032", // Argentina
+  "643", // Russia
+  "826", // UK (2008)
+  "250", // France (2007)
+  "276", // Germany
+  "380", // Italy
+  "724", // Spain
+  "620", // Portugal
+  "528", // Netherlands
+  "056", // Belgium
+  "352", // Iceland - no actually
+  "616", // Poland
+  "300", // Greece
+  "196", // Cyprus
+  "100", // Bulgaria
+  "642", // Romania
+  "642", // dup
+  "710", // South Africa
+  "566", // Nigeria
+  "032", // Argentina
+  "036", // Australia (2008)
+]);
+AE_TREATY_PARTNERS.delete("352"); // remove the mistaken Iceland
+
+// Country name overrides where topojson names differ from common usage
+const COUNTRY_NAMES = {
+  "840": "United States",
+  "826": "United Kingdom",
+  "643": "Russia",
+  "156": "China",
+  "410": "South Korea",
+  "408": "North Korea",
+  "704": "Vietnam",
+  "360": "Indonesia",
+  "784": "United Arab Emirates",
+  "752": "Sweden",
+  "756": "Switzerland",
+  "036": "Australia",
+  "124": "Canada",
+  "250": "France",
+  "276": "Germany",
+  "528": "Netherlands",
+  "392": "Japan",
+  "356": "India",
+  "076": "Brazil",
+  "032": "Argentina",
+  "484": "Mexico",
+  "710": "South Africa",
+  "818": "Egypt",
+  "566": "Nigeria",
+};
+
+// ============================================================
+// ANCHOR CONFIGURATION
+// ============================================================
+const ANCHORS = [
+  {
+    id: "840", label: "United States", short: "US",
+    partners: US_TREATY_PARTNERS,
+    reluctant: US_RELUCTANT,
+    suspended: US_SUSPENDED,
+    note: "116 bilateral treaties. Most recent: Croatia (2022). No treaty with China, Russia, Iran, Gulf states, most of Africa."
+  },
+  {
+    id: "826", label: "United Kingdom", short: "UK",
+    partners: UK_TREATY_PARTNERS,
+    reluctant: new Set(["643","156","364","784"]),
+    note: "Category 1 (EU via Trade & Cooperation Agreement, streamlined surrender) plus ~100 Category 2 bilateral partners. Post-Brexit the EAW was replaced by TCA surrender warrants in 2021."
+  },
+  {
+    id: "eu", label: "European Union", short: "EU",
+    partners: new Set([...EU_MEMBERS, "840","826","036","124","554","392","410","356","710","032","076","152","484","578","352","756","792","818","376","492","438","674","188","170","260","438"]),
+    bloc: EU_MEMBERS,
+    note: "27 member states share the European Arrest Warrant — surrender without political involvement, strict time limits, no bar on extraditing nationals. External treaties vary by state; the map shows commonly-held partners."
+  },
+  {
+    id: "036", label: "Australia", short: "AU",
+    partners: AU_TREATY_PARTNERS,
+    reluctant: AU_RELUCTANT,
+    note: "Extradition Act 1988 with ~40 treaty-designated partners. The 2007 China treaty was signed but the enabling regulations were withdrawn in 2017 — effectively non-operational."
+  },
+  {
+    id: "124", label: "Canada", short: "CA",
+    partners: CA_TREATY_PARTNERS,
+    note: "Extradition Act partners listed by Order in Council. Close cooperation with US (shared border makes this the most active corridor), UK, EU, and Commonwealth."
+  },
+  {
+    id: "643", label: "Russia", short: "RU",
+    partners: RU_TREATY_PARTNERS,
+    note: "CIS Minsk Convention (1993) binds post-Soviet states. Selective bilateral treaties beyond. Does not extradite its own nationals (constitutional bar) and has no treaty with the US, UK, or Canada."
+  },
+  {
+    id: "156", label: "China", short: "CN",
+    partners: CN_TREATY_PARTNERS,
+    reluctant: CN_RELUCTANT,
+    note: "~60 bilateral treaties, rapidly expanding since 2010s. No treaty with US, UK, or Canada. Western courts often refuse China's requests over due-process and torture concerns."
+  },
+  {
+    id: "784", label: "UAE", short: "AE",
+    partners: AE_TREATY_PARTNERS,
+    note: "Riyadh Arab Convention binds GCC + wider Arab League. Aggressive treaty expansion with India, UK (2008), France, Pakistan. Still a common destination due to selective enforcement and investor-visa programs."
+  }
+];
+
+let currentAnchor = ANCHORS[0];
+let havensMode = false;
+
+// ============================================================
+// UI: Anchor chips
+// ============================================================
+const chipsContainer = document.getElementById("chips");
+ANCHORS.forEach(a => {
+  const chip = document.createElement("button");
+  chip.className = "chip" + (a === currentAnchor ? " active" : "");
+  chip.textContent = a.label;
+  chip.dataset.id = a.id;
+  chip.addEventListener("click", () => {
+    currentAnchor = a;
+    document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+    chip.classList.add("active");
+    render();
+  });
+  chipsContainer.appendChild(chip);
+});
+
+// Havens toggle
+const havensToggle = document.getElementById("havensToggle");
+havensToggle.addEventListener("click", () => {
+  havensMode = !havensMode;
+  havensToggle.classList.toggle("active", havensMode);
+  render();
+});
+
+// ============================================================
+// MAP RENDER
+// ============================================================
+const svg = d3.select("#map");
+const tooltip = document.getElementById("tooltip");
+const mapWrap = document.getElementById("mapWrap");
+
+const width = 960, height = 500;
+const projection = d3.geoNaturalEarth1().scale(175).translate([width / 2, height / 2 + 20]);
+const path = d3.geoPath(projection);
+
+let countries = [];
+let worldReady = false;
+
+// Load world atlas
+d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json").then(world => {
+  countries = topojson.feature(world, world.objects.countries).features;
+
+  // Add zoom behavior
+  const zoom = d3.zoom().scaleExtent([1, 8]).on("zoom", (e) => {
+    g.attr("transform", e.transform);
+  });
+  svg.call(zoom);
+
+  const g = svg.append("g");
+
+  g.selectAll("path.country")
+    .data(countries)
+    .join("path")
+    .attr("class", "country")
+    .attr("d", path)
+    .attr("data-id", d => String(d.id).padStart(3, "0"))
+    .on("mousemove", function(event, d) {
+      const id = String(d.id).padStart(3, "0");
+      const name = COUNTRY_NAMES[id] || d.properties.name;
+      const status = getStatus(id);
+      const rect = mapWrap.getBoundingClientRect();
+      tooltip.style.left = (event.clientX - rect.left + 12) + "px";
+      tooltip.style.top = (event.clientY - rect.top + 12) + "px";
+      tooltip.style.opacity = "1";
+      tooltip.innerHTML = `
+        <div class="tt-name">${name}</div>
+        <div class="tt-status">${status.label}</div>
+        ${status.note ? `<div class="tt-note">${status.note}</div>` : ""}
+      `;
+    })
+    .on("mouseleave", () => { tooltip.style.opacity = "0"; })
+    .on("click", function(event, d) {
+      const id = String(d.id).padStart(3, "0");
+      // If clicked country is one of our anchor options, switch to it
+      const matchAnchor = ANCHORS.find(a => a.id === id);
+      if (matchAnchor) {
+        currentAnchor = matchAnchor;
+        document.querySelectorAll(".chip").forEach(c => {
+          c.classList.toggle("active", c.dataset.id === matchAnchor.id);
+        });
+        render();
+      }
+    });
+
+  worldReady = true;
+  render();
+}).catch(err => {
+  console.error("Failed to load map:", err);
+  document.getElementById("mapWrap").innerHTML = `
+    <div style="padding: 60px; text-align: center; color: var(--ink-dim); font-style: italic;">
+      Could not load map data. Please check your connection and refresh.
+    </div>`;
+});
+
+// ============================================================
+// STATUS LOGIC
+// ============================================================
+function getStatus(id) {
+  // Anchor country itself
+  if (id === currentAnchor.id) {
+    return { cls: "anchor", label: "Anchor country", note: currentAnchor.note };
+  }
+  // EU bloc special case - show EU members as bloc when EU is anchor
+  if (currentAnchor.id === "eu" && currentAnchor.bloc && currentAnchor.bloc.has(id)) {
+    return { cls: "eu-bloc", label: "EU Member · EAW", note: "Covered by the European Arrest Warrant — streamlined surrender between all 27 member states." };
+  }
+
+  // Havens mode: only flag as haven if there's no treaty with the current anchor
+  // (a haven that has a treaty with the anchor is just a treaty partner with caveats)
+  if (havensMode && FUGITIVE_HAVENS.has(id)) {
+    const hasTreaty = currentAnchor.partners && currentAnchor.partners.has(id);
+    const isReluctant = currentAnchor.reluctant && currentAnchor.reluctant.has(id);
+    if (!hasTreaty || isReluctant) {
+      return { cls: "haven", label: "Fugitive haven", note: "Commonly cited as a destination where extradition to Western states is unlikely — no treaty, constitutional bar on extraditing nationals, or selective enforcement in practice." };
+    }
+  }
+
+  if (currentAnchor.suspended && currentAnchor.suspended.has(id)) {
+    return { cls: "no-treaty", label: "Treaty suspended", note: "Extradition treaty formally suspended." };
+  }
+  if (currentAnchor.reluctant && currentAnchor.reluctant.has(id)) {
+    return { cls: "reluctant", label: "Treaty — but reluctant", note: "A treaty exists on paper, but extradition requests are frequently refused or obstructed in practice." };
+  }
+  if (currentAnchor.partners && currentAnchor.partners.has(id)) {
+    return { cls: "treaty", label: "Treaty in force", note: "A bilateral extradition treaty or multilateral framework is in force." };
+  }
+  if (FUGITIVE_HAVENS.has(id)) {
+    return { cls: "no-treaty", label: "No treaty", note: "Often cited as a fugitive destination." };
+  }
+  return { cls: "no-treaty", label: "No treaty", note: "No bilateral extradition treaty in force. Cooperation possible only via ad-hoc reciprocity." };
+}
+
+function render() {
+  if (!worldReady) return;
+  d3.selectAll("path.country").each(function(d) {
+    const id = String(d.id).padStart(3, "0");
+    const status = getStatus(id);
+    const el = d3.select(this);
+    el.attr("class", "country " + status.cls);
+  });
+  renderLegend();
+  renderStats();
+}
+
+// ============================================================
+// LEGEND
+// ============================================================
+function renderLegend() {
+  const items = havensMode
+    ? [
+        { cls: "anchor", label: "Anchor" },
+        { cls: "treaty", label: "Treaty in force" },
+        { cls: "reluctant", label: "Treaty — but reluctant" },
+        { cls: "haven", label: "Fugitive haven" },
+        { cls: "no-treaty", label: "No treaty" }
+      ]
+    : [
+        { cls: "anchor", label: "Anchor country" },
+        { cls: "treaty", label: "Treaty in force" },
+        { cls: "reluctant", label: "Reluctant partner" },
+        { cls: "no-treaty", label: "No treaty" }
+      ];
+
+  if (currentAnchor.id === "eu") {
+    items.splice(1, 0, { cls: "eu-bloc", label: "EU · European Arrest Warrant" });
+  }
+
+  const colorMap = {
+    "anchor": "#f4ede4",
+    "treaty": "#7a9b6a",
+    "reluctant": "#e8a33d",
+    "no-treaty": "#2a1f1a",
+    "haven": "#c45a3a",
+    "eu-bloc": "#7a9b6a"
+  };
+
+  const legend = document.getElementById("legend");
+  legend.innerHTML = items.map(i => `
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:${colorMap[i.cls]}"></div>
+      <span>${i.label}</span>
+    </div>
+  `).join("");
+}
+
+// ============================================================
+// STATS
+// ============================================================
+function renderStats() {
+  const a = currentAnchor;
+  const totalCountries = 195; // UN members roughly
+  let treatyCount = 0, reluctantCount = 0, noTreatyCount = 0;
+
+  if (a.id === "eu") {
+    treatyCount = (a.partners ? a.partners.size : 0) + (a.bloc ? a.bloc.size : 0);
+    treatyCount = Math.min(treatyCount, totalCountries);
+  } else {
+    treatyCount = a.partners ? a.partners.size : 0;
+    reluctantCount = a.reluctant ? a.reluctant.size : 0;
+  }
+  noTreatyCount = totalCountries - treatyCount;
+
+  const stats = [
+    { label: "Anchor", value: a.short, unit: "", note: a.label },
+    { label: "Treaty partners", value: treatyCount, unit: "countries", note: "bilateral or multilateral" },
+    { label: "Reluctant", value: reluctantCount, unit: "countries", note: "treaty exists but rarely honored" },
+    { label: "No-treaty states", value: `~${noTreatyCount}`, unit: "countries", note: "of ~195 sovereign states" }
+  ];
+
+  document.getElementById("stats").innerHTML = stats.map(s => `
+    <div class="stat">
+      <div class="stat-label">${s.label}</div>
+      <div class="stat-value">${s.value}<span class="unit">${s.unit}</span></div>
+      <div class="stat-note">${s.note}</div>
+    </div>
+  `).join("");
+}
+</script>
+</body>
+</html>

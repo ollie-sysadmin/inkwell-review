@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Atlas — Direction B: The Botanical Score (Fragapane · Lupi)</title>
+<link rel="stylesheet" href="../design-system/project/colors_and_type.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<style>
+  /* ============================================================
+     DIRECTION B — "THE BOTANICAL SCORE"
+     Anchored in Federica Fragapane (La Lettura visual-data) and
+     Giorgia Lupi / Accurat (invented-notation editorial spreads).
+
+     The big moves vs the current Atlas:
+     · The choropleth is abandoned as the default. Countries are
+       drawn as ghosted outlines; the map is background, not figure.
+     · The relationships are the figure. Hairline ink lines radiate
+       from the anchor (US) out to each treaty partner — a
+       constellation rather than a fill.
+     · Line grammar encodes status: solid line = treaty in force,
+       dashed = reluctant, dotted perpendicular tick at the havens,
+       absence of a line = no treaty. The score key in the sidebar
+       documents the notation.
+     · Curated italic-serif labels on hairline leaders, not labels
+       on every country — Fragapane's practice of "trust the reader,
+       but don't bury them."
+     · Generous white space. No chart-card fill in the Fragapane
+       register; the piece breathes.
+     ============================================================ */
+
+  html, body { margin: 0; padding: 0; background: var(--photocopy-white); color: var(--photocopy-black); overflow-x: hidden; }
+
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 200;
+    background-image: url("../assets/speckle-dark.svg");
+    background-repeat: repeat; opacity: 0.7; mix-blend-mode: multiply;
+  }
+  body::after {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 201;
+    background-image: url("../assets/speckle-light.svg");
+    background-repeat: repeat; opacity: 0.5; mix-blend-mode: screen;
+  }
+
+  .direction-label {
+    position: fixed; top: 10px; left: 10px; z-index: 300;
+    background: var(--photocopy-black); color: var(--paper-blue);
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 6px 10px; border: 1.5px solid var(--paper-blue);
+  }
+
+  /* ---- Masthead (same as A) ---- */
+  .mast { background: var(--photocopy-black); padding: 28px 40px 22px; text-align: center; position: relative; z-index: 1; }
+  .mast__wm { font-family: var(--font-wordmark); font-weight: 400; font-size: clamp(40px, 7vw, 88px); line-height: 0.95; letter-spacing: -0.02em; color: var(--paper-blue); display: inline-block; white-space: nowrap; }
+  .mast__wm em { font-style: italic; margin-left: 0.18em; }
+  .mast__rule { border-top: 6px double var(--paper-blue); margin-top: 14px; }
+
+  .page { max-width: 1180px; margin: 0 auto; padding: 56px 40px 80px; }
+
+  /* ---- Article header (smaller for Fragapane register — she frames
+     titles lightly, lets the chart own the page). ---- */
+  .ah {
+    max-width: 52ch; margin: 0 auto 20px;
+    display: grid; grid-template-columns: auto 1fr; gap: 14px 20px;
+    align-items: baseline;
+  }
+  .ah__fig {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--fg-muted);
+    grid-column: 1 / -1;
+  }
+  .ah__headline {
+    font-family: var(--font-wordmark); font-weight: 400; font-style: normal;
+    font-size: clamp(32px, 4.4vw, 52px); line-height: 1.02;
+    letter-spacing: -0.02em; margin: 0; text-wrap: balance;
+    grid-column: 1 / -1;
+  }
+  .ah__headline em { font-style: italic; }
+  .ah__stand {
+    font-family: var(--font-wordmark); font-style: italic; font-weight: 400;
+    font-size: 17px; line-height: 1.4; margin: 0; max-width: 50ch;
+    grid-column: 1 / -1;
+  }
+  .ah__meta {
+    font-family: var(--font-mono); font-weight: 500;
+    font-size: 11px; letter-spacing: 0.08em; color: var(--fg-muted);
+    grid-column: 1 / -1;
+    display: flex; gap: 14px; flex-wrap: wrap;
+  }
+  .ah__meta .dot { opacity: 0.4; }
+
+  /* ---- The score ----
+     Two columns: [score] [key + prose]. No chart-card fill. The
+     whole thing lives on photocopy-white and takes almost the full
+     page width. Thin rule between score and page. */
+  .score {
+    margin: 32px 0 40px;
+    display: grid;
+    grid-template-columns: 2.5fr 1fr;
+    gap: 48px;
+    border-top: 0.5px solid var(--photocopy-black);
+    padding-top: 28px;
+  }
+  .score__svg {
+    width: 100%; height: auto;
+    display: block;
+  }
+  .score__svg .country {
+    fill: none; stroke: var(--photocopy-black); stroke-width: 0.35;
+    opacity: 0.35;
+  }
+  .score__svg .country--anchor {
+    fill: var(--photocopy-black); stroke: var(--photocopy-black); opacity: 1;
+  }
+  .score__svg .link {
+    fill: none; stroke: var(--photocopy-black);
+    stroke-width: 0.5;
+    opacity: 0.75;
+  }
+  .score__svg .link--reluctant {
+    stroke-dasharray: 3 3;
+    stroke-width: 0.7;
+  }
+  .score__svg .endpoint {
+    fill: var(--photocopy-black);
+    r: 1.6;
+  }
+  .score__svg .haven {
+    fill: var(--paper-pink);
+    stroke: var(--photocopy-black);
+    stroke-width: 0.8;
+  }
+  .score__svg .haven-tick {
+    stroke: var(--photocopy-black);
+    stroke-width: 0.8;
+  }
+  .score__svg .anchor-ring {
+    fill: none; stroke: var(--photocopy-black); stroke-width: 1.2;
+  }
+  .score__svg .label {
+    font-family: var(--font-wordmark); font-style: italic; font-weight: 400;
+    font-size: 9px; fill: var(--photocopy-black);
+  }
+  .score__svg .leader {
+    stroke: var(--photocopy-black); stroke-width: 0.4;
+    opacity: 0.7;
+  }
+
+  /* ---- Score key (right column) ---- */
+  .key__title {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--photocopy-black); margin: 0 0 16px;
+    padding-bottom: 8px; border-bottom: 1.5px solid var(--photocopy-black);
+  }
+  .key__item {
+    display: grid; grid-template-columns: 44px 1fr; gap: 12px;
+    padding: 10px 0; border-bottom: 1px dotted var(--border);
+    align-items: center;
+  }
+  .key__item:last-of-type { border-bottom: 0; }
+  .key__glyph {
+    width: 44px; height: 20px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .key__name {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    margin: 0;
+  }
+  .key__desc {
+    font-family: var(--font-wordmark); font-style: italic;
+    font-size: 12px; line-height: 1.35;
+    color: var(--fg-muted);
+    margin: 2px 0 0;
+    grid-column: 2;
+  }
+
+  .key__prose {
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1.5px solid var(--photocopy-black);
+  }
+  .key__prose p {
+    font-family: var(--font-body); font-size: 13px; line-height: 1.55;
+    margin: 0 0 10px;
+  }
+  .key__prose p:first-of-type::first-letter {
+    font-family: var(--font-display); font-weight: 800;
+    float: left; font-size: 3.2em; line-height: 0.82;
+    padding: 4px 8px 0 0;
+  }
+  .key__prose strong {
+    font-family: var(--font-wordmark); font-style: italic; font-weight: 400;
+  }
+
+  .score__source {
+    font-family: var(--font-body); font-style: italic;
+    font-size: 11px; line-height: 1.45; color: var(--fg-muted);
+    margin: 28px 0 0; padding-top: 14px;
+    border-top: 0.5px solid var(--photocopy-black);
+    max-width: 72ch;
+    grid-column: 1 / -1;
+  }
+
+  /* ---- Footer (same as A) ---- */
+  .foot { background: var(--photocopy-black); color: var(--paper-blue); padding: 40px 40px 28px; margin-top: 20px; text-align: center; }
+  .foot__wm { font-family: var(--font-wordmark); font-style: italic; font-size: 22px; color: var(--paper-blue); }
+  .foot__line { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; margin-top: 8px; color: var(--paper-blue); opacity: 0.8; }
+
+  @media (max-width: 900px) {
+    .score { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="direction-label">Direction B · The Botanical Score</div>
+
+<header class="mast">
+  <div class="mast__wm">Inkwell<em>Review</em></div>
+  <div class="mast__rule"></div>
+</header>
+
+<main class="page">
+
+  <section class="ah">
+    <div class="ah__fig">Fig. I · The Extradition Atlas · Anchored on the United States</div>
+    <h1 class="ah__headline">The <em>seventy-eight countries</em> that will not send you home.</h1>
+    <p class="ah__stand">Every bilateral extradition relationship the United States claims, rendered as lines. Absence is the silent category — the states the map does not reach.</p>
+    <div class="ah__meta">
+      <span>Ollie Inkwell</span><span class="dot">·</span>
+      <span>19.04.2026</span><span class="dot">·</span>
+      <span>12′ read</span>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       THE SCORE
+       ============================================================ -->
+  <section class="score">
+
+    <div>
+      <svg class="score__svg" viewBox="0 0 960 500" preserveAspectRatio="xMidYMid meet" id="scoreB"></svg>
+    </div>
+
+    <aside>
+      <h2 class="key__title">Score key</h2>
+
+      <div class="key__item">
+        <span class="key__glyph">
+          <svg width="30" height="14"><path d="M2 7 Q 14 2, 28 7" fill="none" stroke="#111111" stroke-width="0.7"/></svg>
+        </span>
+        <div>
+          <p class="key__name">Treaty in force</p>
+          <p class="key__desc">A single hairline from the anchor to the treaty partner.</p>
+        </div>
+      </div>
+
+      <div class="key__item">
+        <span class="key__glyph">
+          <svg width="30" height="14"><path d="M2 7 Q 14 2, 28 7" fill="none" stroke="#111111" stroke-width="0.9" stroke-dasharray="3 3"/></svg>
+        </span>
+        <div>
+          <p class="key__name">Reluctant</p>
+          <p class="key__desc">Same line, broken — the obligation is notional.</p>
+        </div>
+      </div>
+
+      <div class="key__item">
+        <span class="key__glyph">
+          <svg width="30" height="14"><circle cx="15" cy="7" r="3.2" fill="#ECADD4" stroke="#111111" stroke-width="0.8"/></svg>
+        </span>
+        <div>
+          <p class="key__name">Haven</p>
+          <p class="key__desc">Marked as a node without a line. No relationship to draw.</p>
+        </div>
+      </div>
+
+      <div class="key__item">
+        <span class="key__glyph">
+          <svg width="30" height="14"><circle cx="15" cy="7" r="4" fill="none" stroke="#111111" stroke-width="1.2"/><circle cx="15" cy="7" r="1.8" fill="#111111"/></svg>
+        </span>
+        <div>
+          <p class="key__name">Anchor</p>
+          <p class="key__desc">The state doing the asking.</p>
+        </div>
+      </div>
+
+      <div class="key__prose">
+        <p>The network has a <strong>shape</strong>. From Washington it reaches across the Atlantic almost without interruption, along the Pacific rim in disciplined arcs, and barely at all into Central Asia or the Gulf.</p>
+        <p>The map is not a map of countries. It is a map of relationships — and the <strong>absences</strong> are the argument.</p>
+      </div>
+    </aside>
+
+    <p class="score__source">
+      Source: US Department of State (18 U.S.C. § 3181); Wikipedia extradition treaty compilation; Eurojust EAW guidance. Countries plotted by their geographic centroid on a Natural Earth projection. Reluctant partners after Boister (2022); haven set from Inkwell Review analysis. For illustration, not legal advice.
+    </p>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="foot__wm">Inkwell Review</div>
+  <div class="foot__line">inkwellreview.com · twice weekly</div>
+</footer>
+
+<script>
+const svg = d3.select("#scoreB");
+const width = 960, height = 500;
+const projection = d3.geoNaturalEarth1().scale(175).translate([width/2, height/2 + 20]);
+const path = d3.geoPath(projection);
+
+const TREATY = new Set(["008","028","032","036","040","044","052","056","084","068","070","076","100","124","152","170","178","188","191","192","196","203","208","212","214","218","818","222","233","748","242","246","250","270","276","288","300","308","320","328","332","340","344","348","352","356","368","372","376","380","388","392","400","404","296","383","428","426","430","438","440","442","454","458","470","584","480","484","583","492","499","104","520","528","554","558","566","807","578","586","585","591","598","600","604","608","616","620","642","659","662","670","674","688","690","694","702","703","705","710","410","724","144","740","752","756","834","764","776","780","792","798","826","858","862","894","716"]);
+const RELUCTANT = new Set(["192","068","218","818","352","558","586","756","862","716"]);
+const HAVENS = new Set(["643","156","364","408","784","682","634","414"]);
+
+// Curated label list — the ones Fragapane would actually name.
+const LABELS = {
+  "124": "Canada",
+  "826": "United Kingdom",
+  "250": "France",
+  "276": "Germany",
+  "380": "Italy",
+  "724": "Spain",
+  "710": "South Africa",
+  "392": "Japan",
+  "036": "Australia",
+  "484": "Mexico",
+  "076": "Brazil",
+  "356": "India",
+  "643": "Russia",
+  "156": "China",
+  "784": "UAE",
+  "364": "Iran",
+  "192": "Cuba",
+};
+
+d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json").then(world => {
+  const countries = topojson.feature(world, world.objects.countries).features;
+
+  // --- Ghosted country outlines ---
+  svg.append("g").attr("class", "countries").selectAll("path")
+    .data(countries).join("path")
+    .attr("d", path)
+    .attr("class", d => String(d.id).padStart(3,"0") === "840" ? "country country--anchor" : "country");
+
+  // --- Anchor + links ---
+  const usFeature = countries.find(d => String(d.id).padStart(3,"0") === "840");
+  if (!usFeature) return;
+  const usCentroid = path.centroid(usFeature);
+
+  const linkLayer = svg.append("g").attr("class", "links");
+
+  countries.forEach(c => {
+    const id = String(c.id).padStart(3,"0");
+    if (id === "840") return;
+    if (!TREATY.has(id)) return;
+    const [x2, y2] = path.centroid(c);
+    if (isNaN(x2) || isNaN(y2)) return;
+    const [x1, y1] = usCentroid;
+    const mx = (x1 + x2) / 2;
+    const my = (y1 + y2) / 2;
+    // Curve control point: lift the midpoint toward the poles a bit,
+    // so lines arc above the straight geodesic — Fragapane uses this
+    // to avoid bunched overplotting near the anchor.
+    const dx = x2 - x1;
+    const lift = Math.min(60, Math.abs(dx) * 0.22);
+    const cx = mx;
+    const cy = my - lift;
+    linkLayer.append("path")
+      .attr("d", `M${x1},${y1} Q${cx},${cy} ${x2},${y2}`)
+      .attr("class", RELUCTANT.has(id) ? "link link--reluctant" : "link");
+    linkLayer.append("circle")
+      .attr("class", "endpoint")
+      .attr("cx", x2).attr("cy", y2).attr("r", 1.6);
+  });
+
+  // --- Haven markers (no line, just a node + tick) ---
+  const havenLayer = svg.append("g").attr("class", "havens");
+  countries.forEach(c => {
+    const id = String(c.id).padStart(3,"0");
+    if (!HAVENS.has(id)) return;
+    const [cx, cy] = path.centroid(c);
+    if (isNaN(cx) || isNaN(cy)) return;
+    havenLayer.append("circle")
+      .attr("class", "haven")
+      .attr("cx", cx).attr("cy", cy).attr("r", 2.6);
+  });
+
+  // --- Anchor ring (US) ---
+  svg.append("circle")
+    .attr("class", "anchor-ring")
+    .attr("cx", usCentroid[0]).attr("cy", usCentroid[1]).attr("r", 5);
+  svg.append("circle")
+    .attr("fill", "#111111")
+    .attr("cx", usCentroid[0]).attr("cy", usCentroid[1]).attr("r", 2);
+
+  // --- Curated labels: italic serif on hairline leaders ---
+  const labelLayer = svg.append("g").attr("class", "labels");
+  Object.entries(LABELS).forEach(([id, name]) => {
+    const c = countries.find(f => String(f.id).padStart(3,"0") === id);
+    if (!c) return;
+    const [cx, cy] = path.centroid(c);
+    if (isNaN(cx) || isNaN(cy)) return;
+
+    // Leader: short tick in a direction that avoids the country bbox
+    const isSouth = cy > 250;
+    const isEast = cx > 480;
+    const dx = (isEast ? 10 : -10);
+    const dy = (isSouth ? 10 : -10);
+    const tx = cx + dx;
+    const ty = cy + dy;
+    labelLayer.append("line")
+      .attr("class", "leader")
+      .attr("x1", cx).attr("y1", cy)
+      .attr("x2", tx).attr("y2", ty);
+    labelLayer.append("text")
+      .attr("class", "label")
+      .attr("x", tx + (isEast ? 2 : -2))
+      .attr("y", ty + (isSouth ? 8 : -2))
+      .attr("text-anchor", isEast ? "start" : "end")
+      .text(name);
+  });
+});
+</script>
+</body>
+</html>

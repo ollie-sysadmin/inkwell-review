@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Brand — Wordmark / Reversed</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .stage {
+    aspect-ratio: 1 / 1;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+  .stage--ink    { background: var(--photocopy-black); color: var(--photocopy-white); }
+  .stage--purple { background: var(--paper-purple); color: var(--photocopy-black); }
+  .stage--yellow { background: var(--paper-yellow); color: var(--photocopy-black); }
+  .stage--blue   { background: var(--paper-blue); color: var(--photocopy-black); }
+  .mini-rail {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .wm {
+    font-family: var(--font-wordmark);
+    font-weight: 400;
+    line-height: 0.84;
+    letter-spacing: -0.01em;
+    font-size: 44px;
+  }
+  .wm em { font-style: italic; }
+  .caption {
+    font-family: var(--font-wordmark);
+    font-style: italic;
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="card__kicker">Brand · Wordmark · Surfaces</div>
+  <h3 class="card__title">Inkwell, everywhere.</h3>
+  <p class="card__sub">The lockup holds on ink and on any pastel paper. Keep the rails, lose the rules.</p>
+
+  <div class="grid">
+    <div class="stage stage--ink">
+      <div class="mini-rail">Vol. IV · No. 12</div>
+      <div class="wm">Inkwell<br><em>Review</em></div>
+      <div class="caption">— reversed on ink —</div>
+    </div>
+    <div class="stage stage--purple">
+      <div class="mini-rail">Cover · Lead essays</div>
+      <div class="wm">Inkwell<br><em>Review</em></div>
+      <div class="caption">— on purple, cover —</div>
+    </div>
+    <div class="stage stage--yellow">
+      <div class="mini-rail">Voice · Opinion</div>
+      <div class="wm">Inkwell<br><em>Review</em></div>
+      <div class="caption">— on yellow, voice —</div>
+    </div>
+    <div class="stage stage--blue">
+      <div class="mini-rail">Data · Charts</div>
+      <div class="wm">Inkwell<br><em>Review</em></div>
+      <div class="caption">— on blue, data —</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

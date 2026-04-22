@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Inkwell Review — Issue 034</title>
+<link rel="stylesheet" href="kit.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+
+function Masthead() {
+  const nav = ["Essays", "Data", "Voice", "Archive", "Subscribe"];
+  const [active, setActive] = React.useState("Essays");
+  return (
+    <header className="ir-masthead">
+      <div className="ir-masthead__rail">
+        <span>Vol. IV · Iss. 034 · Tue 14 Apr 2026</span>
+        <span>Cities &amp; Work</span>
+        <span>inkwellreview.com</span>
+      </div>
+      <div className="ir-masthead__main">
+        <a href="#" className="ir-masthead__wordmark">Inkwell<br /><em>Review</em></a>
+        <nav className="ir-masthead__nav">
+          {nav.map((n) =>
+          <a key={n} href="#" onClick={(e) => { e.preventDefault(); setActive(n); }} className={n === active ? "is-active" : ""}>{n}</a>
+          )}
+        </nav>
+      </div>
+      <div className="ir-masthead__tagline">
+        <span>Statistical peculiarities of human behaviour.</span>
+        <span className="r">Edited by Ollie · twice weekly</span>
+      </div>
+    </header>);
+}
+
+function LineChart({ rows }) {
+  const W = 720, H = 320, pad = { l: 44, r: 40, t: 16, b: 36 };
+  const ys = rows.flatMap((r) => [r.value, r.mean]);
+  const yMin = Math.floor(Math.min(...ys) - 1), yMax = Math.ceil(Math.max(...ys) + 1);
+  const x = (i) => pad.l + i / (rows.length - 1) * (W - pad.l - pad.r);
+  const y = (v) => pad.t + (1 - (v - yMin) / (yMax - yMin)) * (H - pad.t - pad.b);
+  const line = (k) => rows.map((r, i) => (i ? 'L' : 'M') + ' ' + x(i) + ' ' + y(r[k])).join(' ');
+  const grid = Array.from({ length: 6 }, (_, i) => yMin + i * (yMax - yMin) / 5);
+  return (
+    <figure className="ir-chart">
+      <div className="ir-chart__head">
+        <div className="ir-chart__kicker"><span>Data · Minutes</span><span>Fig. 1</span></div>
+        <div className="ir-chart__title">The median fell. The mean stalled.</div>
+        <div className="ir-chart__sub">One-way commute time, OECD-14 average, 2014–2024.</div>
+      </div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="ir-chart__svg" role="img">
+        {grid.map((v, i) =>
+        <g key={i}>
+            <line x1={pad.l} x2={W - pad.r} y1={y(v)} y2={y(v)} className="ir-chart__grid" />
+            <text x={pad.l - 8} y={y(v) + 3} textAnchor="end" className="ir-chart__ytick">{v}</text>
+          </g>
+        )}
+        <path d={line("mean")} className="ir-chart__baseline" />
+        <path d={line("value")} className="ir-chart__highlight" />
+        <circle cx={x(rows.length - 1)} cy={y(rows[rows.length - 1].value)} r="5" className="ir-chart__dot" />
+        <text x={x(rows.length - 1) + 10} y={y(rows[rows.length - 1].value) + 4} className="ir-chart__endlabel">{rows[rows.length - 1].value}</text>
+        {rows.map((r, i) => i % 2 === 0 || i === rows.length - 1 ?
+        <text key={i} x={x(i)} y={H - 14} textAnchor="middle" className="ir-chart__xtick">{r.year}</text> :
+        null)}
+      </svg>
+      <div className="ir-chart__legend">
+        <span><span className="dot"></span>Median</span>
+        <span><span className="dot d-baseline"></span>Mean</span>
+      </div>
+      <div className="ir-chart__source">Source: OECD Labour Force Survey, Eurostat, Inkwell Review analysis.</div>
+    </figure>);
+}
+
+function Article() {
+  const rows = [
+  { year: 2014, value: 34.5, mean: 36.2 }, { year: 2015, value: 34.1, mean: 36.1 },
+  { year: 2016, value: 33.6, mean: 36.0 }, { year: 2017, value: 33.0, mean: 35.9 },
+  { year: 2018, value: 32.4, mean: 35.7 }, { year: 2019, value: 31.9, mean: 35.6 },
+  { year: 2020, value: 29.5, mean: 33.0 }, { year: 2021, value: 30.2, mean: 34.1 },
+  { year: 2022, value: 29.4, mean: 35.0 }, { year: 2023, value: 28.6, mean: 35.4 },
+  { year: 2024, value: 28.0, mean: 35.6 }];
+
+  return (
+    <article className="ir-article">
+      <div className="ir-kicker"><span>Cities &amp; Work</span><span>Issue 034 · 7 min</span></div>
+      <h1 className="ir-headline">Why the <span className="hl">median</span> commute shrank six and a half minutes.</h1>
+      <p className="ir-standfirst">A decade-long drift, hidden inside the averages, has finally surfaced — and it rewrites how we plan cities.</p>
+      <div className="ir-byline">
+        <span>By <em>Rupa Das</em></span><span className="ir-byline__dot">·</span>
+        <span>14 April 2026</span><span className="ir-byline__dot">·</span>
+        <span>7 min read</span>
+      </div>
+      <p className="ir-dropcap">Between 2014 and 2024, the median one-way commute across fourteen OECD economies fell by six and a half minutes. The mean barely moved. The gap — between what the typical worker experiences and what the average suggests — is the story this week.</p>
+      <LineChart rows={rows} />
+      <p>Averages are a polite conspiracy between the top and the bottom of a distribution. When a handful of exurban super-commuters stretch their journeys past two hours, the mean clings high even while the bulk of workers drift closer to home. That drift is what policy has missed.</p>
+      <figure className="ir-pullquote">
+        <blockquote>Averages are a <span className="hl">polite conspiracy</span> between the top and the bottom of a distribution.</blockquote>
+        <figcaption>— From the standfirst, Issue 034</figcaption>
+      </figure>
+      <p>Three forces compound: the hybrid-working cohort (now roughly 28% of knowledge workers), the quiet re-urbanisation of mid-sized European cities, and a shift in the geography of low-wage service work back toward dense nodes.</p>
+      <p>Our reading of the OECD-14 panel suggests the trend will continue through the rest of the decade. For transport planners that is good news — for the politics of housing, less so.</p>
+      <div className="ir-signoff">
+        <span className="em">—</span><em>Ollie</em>
+        <span className="note">Ollie · Voice column · Since issue 01</span>
+      </div>
+    </article>);
+}
+
+function SubscribeStrip() {
+  return (
+    <aside className="ir-subscribe">
+      <div>
+        <div className="ir-subscribe__kicker">Twice weekly</div>
+        <div className="ir-subscribe__head">Charts worth repeating <em>at dinner</em> — in your inbox Tuesday and Friday.</div>
+      </div>
+      <form className="ir-subscribe__form" onSubmit={(e) => e.preventDefault()}>
+        <input placeholder="reader@dinnerparty.club" />
+        <button type="submit">Subscribe</button>
+      </form>
+    </aside>);
+}
+
+function SiteFooter() {
+  return (
+    <footer className="ir-footer">
+      <div className="ir-footer__wm">Inkwell<br /><em>Review</em></div>
+      <div className="ir-footer__nav">
+        <div className="ir-footer__tag">Statistical peculiarities of human behaviour, twice weekly. Set in Atkinson Hyperlegible Soft &amp; DM Serif Display.</div>
+        <div><h5>Read</h5><a>Latest</a><a>Archive</a><a>Chart of the week</a></div>
+        <div><h5>Follow</h5><a>Instagram</a><a>Bluesky</a><a>Substack</a></div>
+        <div><h5>About</h5><a>Methodology</a><a>Ollie</a><a>Contact</a></div>
+      </div>
+      <div className="ir-footer__bar">
+        <span>© 2026 Inkwell Review</span>
+        <span>Vol. IV · Iss. 034</span>
+      </div>
+    </footer>);
+}
+
+function App() {
+  return (
+    <div className="ir-page cat-cities">
+      <Masthead />
+      <Article />
+      <SubscribeStrip />
+      <SiteFooter />
+    </div>);
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

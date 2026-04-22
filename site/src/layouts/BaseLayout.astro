@@ -1,0 +1,95 @@
+---
+import '../styles/global.css';
+
+export interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  canonical?: string;
+  /**
+   * If set, emits Schema.org Article JSON-LD. Omit on index / listing pages.
+   */
+  article?: {
+    headline: string;
+    datePublished: string;
+    dateModified?: string;
+    author?: string;
+    image?: string;
+  };
+  /** Category slug — when set, wraps body in `.cat-<slug>` for the pastel background. */
+  category?: 'cover' | 'data' | 'voice' | 'cities' | 'archive' | 'interviews';
+}
+
+const {
+  title = 'Inkwell Review — Statistical peculiarities of human behaviour, twice weekly.',
+  description = 'Statistical peculiarities of human behaviour, charted properly and argued well. A twice-weekly publication edited by Prof. Ollie Inkwell.',
+  ogImage = '/og/default.png',
+  canonical,
+  article,
+  category,
+} = Astro.props;
+
+const siteUrl = Astro.site?.href ?? 'https://inkwellreview.com/';
+const canonicalUrl = canonical ?? new URL(Astro.url.pathname, siteUrl).href;
+const ogImageUrl = ogImage.startsWith('http') ? ogImage : new URL(ogImage, siteUrl).href;
+
+const bodyClass = category ? `cat-${category}` : 'home';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <meta property="og:type" content={article ? 'article' : 'website'} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:site_name" content="Inkwell Review" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" title="Inkwell Review — RSS" href="/rss.xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    {article && (
+      <script type="application/ld+json" set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: article.headline,
+        datePublished: article.datePublished,
+        dateModified: article.dateModified ?? article.datePublished,
+        author: { '@type': 'Person', name: article.author ?? 'Ollie Inkwell' },
+        image: article.image ?? ogImageUrl,
+        publisher: {
+          '@type': 'Organization',
+          name: 'Inkwell Review',
+          logo: { '@type': 'ImageObject', url: new URL('/og/default.png', siteUrl).href },
+        },
+      })} />
+    )}
+
+    <script defer data-domain="inkwellreview.com" src="https://plausible.io/js/script.js"></script>
+  </head>
+  <body class={bodyClass}>
+    {/* Ink-jitter filter — referenced by `.hl` reversed-highlight bars. */}
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+      <defs>
+        <filter id="ink-jitter" x="-2%" y="-15%" width="104%" height="130%">
+          <feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="2" seed="3" result="noise" />
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.4" />
+        </filter>
+      </defs>
+    </svg>
+
+    <slot />
+  </body>
+</html>
