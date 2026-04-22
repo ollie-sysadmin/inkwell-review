@@ -31,12 +31,6 @@
  * the client.
  */
 import ArticleLayout from '../layouts/ArticleLayout.astro';
-import {
-  ANCHORS as DEFAULT_ANCHORS,
-  EU_MEMBERS as DEFAULT_EU_MEMBERS,
-  FUGITIVE_HAVENS as DEFAULT_HAVENS,
-  COUNTRY_NAMES as DEFAULT_COUNTRY_NAMES,
-} from '../lib/cartography/treaty-data';
 
 /**
  * Anchor shape — minimal duck-type so pieces can supply their own modules
@@ -90,11 +84,11 @@ export interface Props {
     readMinutes: number;
     formatLabel: string;   // "Interactive map"
   };
-  /** Per-piece data. Defaults to the Extradition Atlas's treaty-data module. */
-  anchors?: CartographyAnchor[];
-  euMembers?: Set<string>;
-  havens?: Set<string>;
-  countryNames?: Record<string, string>;
+  /** Per-piece data. Each piece supplies its own module. */
+  anchors: CartographyAnchor[];
+  euMembers: Set<string>;
+  havens: Set<string>;
+  countryNames: Record<string, string>;
   /** Toggle copy — defaults to "Highlight fugitive havens". */
   havensToggleLabel?: string;
   /**
@@ -166,10 +160,10 @@ const {
   standfirst,
   meta,
   sourceLine,
-  anchors = DEFAULT_ANCHORS,
-  euMembers = DEFAULT_EU_MEMBERS,
-  havens = DEFAULT_HAVENS,
-  countryNames = DEFAULT_COUNTRY_NAMES,
+  anchors,
+  euMembers,
+  havens,
+  countryNames,
   havensToggleLabel = 'Highlight fugitive havens',
   showHavensToggle,
   mapAriaLabel = 'World map of extradition treaty status',

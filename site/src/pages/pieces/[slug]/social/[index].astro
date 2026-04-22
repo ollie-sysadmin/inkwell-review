@@ -4,14 +4,13 @@
  * `socialCards` array as a standalone HTML page. One path per
  * (piece × card-index).
  *
- *   /pieces/extradition-atlas/social/0  → Atlas · US anchor
- *   /pieces/extradition-atlas/social/1  → Atlas · UK anchor
- *   /pieces/fugitive-destinations/social/0  → FD · US anchor
+ *   /pieces/ai-adoption-gap/social/0  → card 0
+ *   /pieces/ai-adoption-gap/social/1  → card 1
  *   ...etc
  *
  * Card metadata lives in `src/pieces/<slug>.ts` (sibling to the
- * article page). Satori generates PNGs from the same card data via
- * `[index].png.ts` at build time.
+ * article page). PNGs are exported via Playwright headless-Chromium
+ * screenshots at build time (`pnpm cards:export`).
  */
 import '../../../../styles/global.css';
 import SocialCard4x5 from '../../../../components/SocialCard4x5.astro';
