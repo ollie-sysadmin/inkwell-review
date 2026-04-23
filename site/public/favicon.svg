@@ -1,12 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Inkwell Review">
   <title>Inkwell Review</title>
   <style>
-    .i { fill: #111111; }
-    @media (prefers-color-scheme: dark) { .i { fill: #E1E1E1; } }
+    .wm { font-family: "DM Serif Display", "Times New Roman", Georgia, serif; font-size: 128px; font-weight: 400; }
+    .ink { fill: #111111; }
+    .shadow { fill: #CDA5EF; }
+    @media (prefers-color-scheme: dark) {
+      .ink { fill: #E1E1E1; }
+      .shadow { fill: #CDA5EF; opacity: 0.75; }
+    }
   </style>
-  <g class="i">
-    <rect x="30" y="22" width="68" height="12" />
-    <rect x="54" y="34" width="20" height="60" />
-    <rect x="30" y="94" width="68" height="12" />
-  </g>
+  <text class="wm shadow" x="67" y="104" text-anchor="middle">I</text>
+  <text class="wm ink" x="64" y="101" text-anchor="middle">I</text>
 </svg>

@@ -4,9 +4,10 @@
  * Screenshotted to site/public/apple-touch-icon.png by
  * `scripts/export-brand-assets.mjs`.
  *
- * Matches the serif "I" glyph in site/public/favicon.svg, centred on
- * cream paper. iOS applies its own rounded-corner mask on top.
+ * Matches the typographic "I" in site/public/favicon.svg — DM Serif
+ * Display with a paper-purple misregistration shadow, centred on cream.
  */
+import '../../styles/global.css';
 ---
 <!doctype html>
 <html lang="en">
@@ -17,28 +18,39 @@
     <meta name="robots" content="noindex,nofollow" />
   </head>
   <body>
-    <div class="icon" id="apple-touch-icon">
-      <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <g fill="#111111">
-          <rect x="30" y="22" width="68" height="12" />
-          <rect x="54" y="34" width="20" height="60" />
-          <rect x="30" y="94" width="68" height="12" />
-        </g>
-      </svg>
+    <div class="icon" id="apple-touch-icon" aria-label="Inkwell Review">
+      <span class="i-shadow" aria-hidden="true">I</span>
+      <span class="i-ink">I</span>
     </div>
 
     <style>
       html, body { margin: 0; padding: 0; background: #222; }
+      body::before, body::after { display: none !important; }
 
       .icon {
+        position: relative;
         width: 180px;
         height: 180px;
         background: #E1E1E1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        font-family: "DM Serif Display", "Times New Roman", Georgia, serif;
+        font-weight: 400;
+        font-size: 172px;
+        line-height: 1;
       }
-      .icon svg { width: 116px; height: 116px; display: block; }
+      .i-shadow, .i-ink {
+        position: absolute;
+        left: 0; right: 0;
+        text-align: center;
+      }
+      .i-shadow {
+        color: #CDA5EF;
+        top: 8px;
+        transform: translateX(4px);
+      }
+      .i-ink {
+        color: #111111;
+        top: 4px;
+      }
     </style>
   </body>
 </html>
