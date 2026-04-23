@@ -405,12 +405,14 @@ const havensToggleVisible = showHavensToggle ?? havens.size > 0;
             role="listitem"
           >
             <div class="card-gallery__frame-wrap" aria-hidden="true">
-              <iframe
+              <img
                 class="card-gallery__frame"
-                src={`/pieces/${pieceSlug}/social/${i}`}
-                title={`Card ${i + 1}: ${a.label}`}
-                tabindex="-1"
+                src={`/pieces/${pieceSlug}/social/${i}.png`}
+                alt=""
                 loading="lazy"
+                decoding="async"
+                width="1080"
+                height="1350"
               />
             </div>
             <div class="card-gallery__caption">
@@ -442,11 +444,12 @@ const havensToggleVisible = showHavensToggle ?? havens.size > 0;
       >×</button>
 
       <div class="card-lightbox__viewport" aria-hidden="true">
-        <iframe
+        <img
           class="card-lightbox__frame"
           id="card-lightbox-frame"
-          src="about:blank"
-          title="Card detail"
+          src=""
+          alt=""
+          decoding="async"
         />
       </div>
 
@@ -775,10 +778,10 @@ const havensToggleVisible = showHavensToggle ?? havens.size > 0;
         if (typeof ResizeObserver === 'function') {
           new ResizeObserver(updateNav).observe(strip);
         }
-        // Iframe-load as a secondary trigger — scrollWidth can shift once
-        // iframe content paints and forces layout changes.
-        strip.querySelectorAll('iframe').forEach((iframe) => {
-          iframe.addEventListener('load', updateNav);
+        // Image-load as a secondary trigger — scrollWidth can shift once
+        // thumbnails paint and force layout changes.
+        strip.querySelectorAll('img').forEach((img) => {
+          img.addEventListener('load', updateNav);
         });
         // Belt-and-braces re-check after the initial render settles.
         setTimeout(updateNav, 400);
@@ -809,10 +812,11 @@ const havensToggleVisible = showHavensToggle ?? havens.size > 0;
       const metaEl = dialog.querySelector('.card-lightbox__meta');
 
       function openLightbox(index, label) {
-        const url = '/pieces/' + slug + '/social/' + index;
-        frame.setAttribute('src', url);
+        const pageUrl = '/pieces/' + slug + '/social/' + index;
+        const pngUrl = pageUrl + '.png';
+        frame.setAttribute('src', pngUrl);
         labelEl.textContent = label;
-        openLink.setAttribute('href', url);
+        openLink.setAttribute('href', pageUrl);
         applyScale();
         // Lock background scroll — showModal's ::backdrop does not prevent
         // touch-scroll of the underlying page on iOS Safari. Apply on both
@@ -832,8 +836,6 @@ const havensToggleVisible = showHavensToggle ?? havens.size > 0;
       function closeLightbox() {
         if (typeof dialog.close === 'function') dialog.close();
         else dialog.removeAttribute('open');
-        // Blank the iframe so d3 stops running in the background
-        frame.setAttribute('src', 'about:blank');
         document.documentElement.classList.remove('lightbox-open');
         document.body.classList.remove('lightbox-open');
       }
@@ -849,7 +851,6 @@ const havensToggleVisible = showHavensToggle ?? havens.size > 0;
         if (!inCard && !inMeta && !inClose) closeLightbox();
       });
       dialog.addEventListener('close', () => {
-        frame.setAttribute('src', 'about:blank');
         document.documentElement.classList.remove('lightbox-open');
         document.body.classList.remove('lightbox-open');
       });
@@ -1582,14 +1583,11 @@ const havensToggleVisible = showHavensToggle ?? havens.size > 0;
     border-width: 2.5px;
   }
   :global(.card-gallery__frame) {
-    width: 1080px;
-    height: 1350px;
-    border: 0;
+    width: 100%;
+    height: 100%;
     display: block;
-    /* Scale the full-size card down to fit the 260-wide wrapper. */
-    transform: scale(calc(260 / 1080));
-    transform-origin: top left;
-    pointer-events: none; /* thumbnail is a button; iframe shouldn't steal clicks */
+    object-fit: cover;
+    pointer-events: none;
   }
   :global(.card-gallery__caption) {
     display: flex;
@@ -1701,12 +1699,10 @@ const havensToggleVisible = showHavensToggle ?? havens.size > 0;
     border: 1.5px solid var(--photocopy-white);
   }
   :global(.card-lightbox__frame) {
-    width: 1080px;
-    height: 1350px;
-    border: 0;
+    width: 100%;
+    height: 100%;
     display: block;
-    transform: scale(var(--scale));
-    transform-origin: top left;
+    object-fit: contain;
   }
 
   :global(.card-lightbox__meta) {
@@ -1761,13 +1757,11 @@ const havensToggleVisible = showHavensToggle ?? havens.size > 0;
     .card-gallery__nav { display: none; }
     :global(.card-gallery__item) { flex-basis: 220px; }
     :global(.card-gallery__frame-wrap) { width: 220px; height: 275px; }
-    :global(.card-gallery__frame) { transform: scale(calc(220 / 1080)); }
   }
   @media (max-width: 480px) {
     :global(.stats) { grid-template-columns: 1fr; }
     :global(.card-gallery__item) { flex-basis: 200px; }
     :global(.card-gallery__frame-wrap) { width: 200px; height: 250px; }
-    :global(.card-gallery__frame) { transform: scale(calc(200 / 1080)); }
   }
   /* On pointer-coarse devices (touch), suppress the nav arrows regardless
      of width — swipe is the primary affordance. */
