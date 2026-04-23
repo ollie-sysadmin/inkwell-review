@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Inkwell Review">
+  <title>Inkwell Review</title>
+  <rect width="512" height="512" fill="#E1E1E1" />
+  <g fill="#111111" transform="translate(128 128)">
+    <rect x="24" y="16" width="208" height="36" />
+    <rect x="98" y="52" width="60" height="152" />
+    <rect x="24" y="204" width="208" height="36" />
+  </g>
+</svg>

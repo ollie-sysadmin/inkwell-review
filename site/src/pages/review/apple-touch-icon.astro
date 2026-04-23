@@ -1,0 +1,44 @@
+---
+/**
+ * Preview route for the 180×180 Apple home-screen icon.
+ * Screenshotted to site/public/apple-touch-icon.png by
+ * `scripts/export-brand-assets.mjs`.
+ *
+ * Matches the serif "I" glyph in site/public/favicon.svg, centred on
+ * cream paper. iOS applies its own rounded-corner mask on top.
+ */
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=180, initial-scale=1" />
+    <title>Inkwell Review — apple-touch-icon (preview)</title>
+    <meta name="robots" content="noindex,nofollow" />
+  </head>
+  <body>
+    <div class="icon" id="apple-touch-icon">
+      <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <g fill="#111111">
+          <rect x="30" y="22" width="68" height="12" />
+          <rect x="54" y="34" width="20" height="60" />
+          <rect x="30" y="94" width="68" height="12" />
+        </g>
+      </svg>
+    </div>
+
+    <style>
+      html, body { margin: 0; padding: 0; background: #222; }
+
+      .icon {
+        width: 180px;
+        height: 180px;
+        background: #E1E1E1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .icon svg { width: 116px; height: 116px; display: block; }
+    </style>
+  </body>
+</html>

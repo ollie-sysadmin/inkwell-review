@@ -1,0 +1,130 @@
+---
+/**
+ * Preview route for the default Open Graph image (1200×630).
+ * Screenshotted to site/public/og/default.png by
+ * `scripts/export-brand-assets.mjs`.
+ *
+ * Direction 1 — Masthead-front (lowest risk, highest readability).
+ * Per brand/claude-design-brief-og-default.md.
+ */
+import '../../styles/global.css';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=1200, initial-scale=1" />
+    <title>Inkwell Review — OG default (preview)</title>
+    <meta name="robots" content="noindex,nofollow" />
+  </head>
+  <body>
+    <div class="og" id="og-default">
+      <div class="wordmark"><span>Inkwell</span> <em>Review</em></div>
+
+      <div class="rule" aria-hidden="true">
+        <div class="rule__line"></div>
+        <div class="rule__line rule__line--shadow"></div>
+      </div>
+
+      <p class="tagline">
+        Statistical peculiarities of human behaviour,<br />
+        charted properly and argued well.
+      </p>
+
+      <div class="footer-row">
+        <span class="footer-row__left">Twice weekly · Free</span>
+        <span class="footer-row__right">Edited by Prof. Ollie Inkwell</span>
+      </div>
+
+      <div class="speckle" aria-hidden="true"></div>
+    </div>
+
+    <style>
+      html, body { margin: 0; padding: 0; background: #222; }
+      body::before, body::after { display: none !important; }
+
+      .og {
+        position: relative;
+        width: 1200px;
+        height: 630px;
+        background: #E1E1E1;
+        color: #111111;
+        box-sizing: border-box;
+        padding: 78px 96px 72px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .wordmark {
+        font-family: "DM Serif Display", "Times New Roman", Georgia, serif;
+        font-weight: 400;
+        font-size: 132px;
+        line-height: 1;
+        letter-spacing: -0.015em;
+        text-align: center;
+        margin-top: 24px;
+        white-space: nowrap;
+      }
+      .wordmark em {
+        font-style: italic;
+      }
+
+      .rule {
+        position: relative;
+        margin: 52px auto 42px;
+        width: 740px;
+        height: 10px;
+      }
+      .rule__line {
+        position: absolute; left: 0; right: 0; top: 3px; height: 3px;
+        background: #111111;
+        border-radius: 2px;
+        transform: skewY(-0.2deg);
+      }
+      .rule__line--shadow {
+        top: 5px;
+        left: 4px;
+        right: -4px;
+        opacity: 0.22;
+        background: #96C7F2;
+        transform: skewY(0.25deg);
+      }
+
+      .tagline {
+        font-family: "Atkinson Hyperlegible Soft", "Atkinson Hyperlegible", sans-serif;
+        font-weight: 400;
+        font-style: italic;
+        font-size: 36px;
+        line-height: 1.28;
+        text-align: center;
+        margin: 0 auto;
+        max-width: 880px;
+        color: #1a1a1a;
+      }
+
+      .footer-row {
+        margin-top: auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        font-family: "DM Serif Display", "Times New Roman", Georgia, serif;
+        font-weight: 400;
+        font-size: 16px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: #111111;
+      }
+
+      .speckle {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background-image: url("/assets/speckle-dark.svg");
+        background-repeat: repeat;
+        opacity: 0.5;
+        mix-blend-mode: multiply;
+      }
+    </style>
+  </body>
+</html>
